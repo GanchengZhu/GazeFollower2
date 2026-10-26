@@ -397,13 +397,6 @@ const setup_panel = {
                     <div class="studio-card" style="padding: 18px;">
                         <span style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">Vision Preprocessing</span>
                         <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div>
-                                <label class="studio-label">Gaze Estimation Model</label>
-                                <select id="sel-model" class="studio-select" style="width: 100%;">
-                                    <option value="GazeNet_Next.onnx" selected>GazeNet_Next.onnx (8.0 MB - Recommended ONNX)</option>
-                                    <option value="GazeNet_Next.bin">GazeNet_Next.bin (8.0 MB - Encrypted BIN)</option>
-                                </select>
-                            </div>
                             <div style="display: grid; grid-template-columns: 1fr 140px; gap: 10px;">
                                 <div>
                                     <label class="studio-label">Gaze Smoothing (Heuristic Filter)</label>
@@ -832,39 +825,6 @@ const setup_panel = {
             };
         }
 
-        // Model selection
-        const selModel = document.getElementById('sel-model');
-        if (selModel) {
-            selModel.onchange = async (e) => {
-                sdkReady = false;
-                updateStartButtonState();
-                if (statusWrap) statusWrap.style.display = 'flex';
-                status.innerText = "Switching ONNX neural model...";
-                if (badgeStatus) badgeStatus.innerText = "Loading model...";
-                
-                try {
-                    await GazeFollower2.loadModel(e.target.value, (progress) => {
-                        const percent = Math.round(progress * 100);
-                        status.innerText = `Downloading model... ${percent}%`;
-                    });
-                    if (statusWrap) statusWrap.style.display = 'none';
-                    if (badgeStatus) {
-                        badgeStatus.innerHTML = '<span class="pulse-dot"></span> Ready';
-                        badgeStatus.className = 'status-pill';
-                    }
-                    sdkReady = true;
-                    updateStartButtonState();
-                } catch (err) {
-                    status.innerText = "Failed to load model: " + err.message;
-                    if (badgeStatus) {
-                        badgeStatus.innerText = "Model Error";
-                        badgeStatus.className = 'status-pill danger';
-                    }
-                    console.error(err);
-                }
-            };
-        }
-
         // Gaze smoothing (Heuristic filter) & look_ahead option
         const gazeFilterSel = document.getElementById('sel-gaze-filter');
         const inpLookAhead = document.getElementById('inp-look-ahead');
@@ -906,16 +866,9 @@ const setup_panel = {
             }
             
             if (statusWrap) statusWrap.style.display = 'flex';
-            const selectedModel = selModel ? selModel.value : 'GazeNet_Next.onnx';
-            if (GazeFollower2.estimator && GazeFollower2.estimator.modelPath !== selectedModel) {
-                await GazeFollower2.loadModel(selectedModel, (progress) => {
-                    const percent = Math.round(progress * 100);
-                    status.innerText = `Downloading model... ${percent}%`;
-                });
-            }
             await GazeFollower2.begin((progress) => {
                 const percent = Math.round(progress * 100);
-                status.innerText = `Downloading model... ${percent}%`;
+                status.innerText = `Loading neural model... ${percent}%`;
             });
             GazeFollower2.setHeuristicFilter(config.gazeFilter, config.look_ahead);
 
