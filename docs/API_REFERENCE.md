@@ -65,7 +65,7 @@ import GazeFollower2, {
 - **默认行为**：
   - 默认模型：`'GazeNet_Next.onnx'`（开源标准全精度 ONNX 权重）
   - 默认启用启发式滤波：`enableGazeFilter = true`
-  - 默认滤波前瞻窗口：`look_ahead = 2`（滑动窗口总长 $2 \times 2 + 1 = 5$ 帧）
+  - 默认滤波前瞻窗口：`look_ahead = 2`（滑动窗口总长 2 × 2 + 1 = 5 帧）
   - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`，基准 $\lambda = 1.0$)
     - **校准点数自适应正则化系数 $\lambda$（`ridgeAlpha`）推荐规则**：
       - **5 点标定 (`'5-point'`)**：推荐默认 $\lambda = 3.0$（快速标定点数较少，需更强 L2 正则化以防过拟合与外推失真）
@@ -202,7 +202,7 @@ SDK 默认开启 **启发式防抖滤波器 (`HeuristicFilter`)**，在保持零
 ### `setHeuristicFilter(bool?, look_ahead?): GazeFollower2`
 *(兼容别名: `applyKalmanFilter(bool, look_ahead?)`, `applySmoothingFilter(bool, look_ahead?)`)*
 - `bool` (`boolean | HeuristicFilterOptions`, 默认 `true`): 开关标志或配置对象。
-- `look_ahead` (`number`, 默认 `2`): 单侧前瞻帧数（窗口长度 $W = 2 \times \text{look\_ahead} + 1$）。
+- `look_ahead` (`number`, 默认 `2`): 单侧前瞻帧数（滑动窗口总长：`2 × look_ahead + 1` 帧）。
   - `look_ahead = 1`：3 帧窗口，响应最灵敏（适合快速扫视任务）。
   - `look_ahead = 2`：5 帧窗口（**默认推荐**，兼顾平滑度与反应时）。
   - `look_ahead = 3~4`：7~9 帧窗口，强力防抖（适合注视点稳定性分析）。

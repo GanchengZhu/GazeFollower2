@@ -261,7 +261,7 @@ Returns the overlay canvas element.
 ### Filtering & Jitter Reduction (`HeuristicFilter`)
 
 #### `GazeFollower2.setHeuristicFilter(bool?: boolean | Object, look_ahead?: number): GazeFollower2`
-Enables or disables the built-in **Heuristic Filter** on predicted screen coordinates and configures its `look_ahead` window parameter. **Enabled by default (`true`)** with **`look_ahead = 2`** (sliding window of $2 \times \text{look\_ahead} + 1 = 5$ frames).
+Enables or disables the built-in **Heuristic Filter** on predicted screen coordinates and configures its `look_ahead` window parameter. **Enabled by default (`true`)** with **`look_ahead = 2`** (sliding window size: 2 × look_ahead + 1 = 5 frames).
 ```javascript
 GazeFollower2.setHeuristicFilter(true);    // Default: active with look_ahead = 2
 GazeFollower2.setHeuristicFilter(true, 3); // Enable and set look_ahead = 3
@@ -389,7 +389,7 @@ Because client-side eye tracking relies on WebRTC camera streams, WebAssembly (W
 
 ### 🖥️ Recommended Hardware & Environment
 
-For optimal tracking accuracy (mean spatial error $\le 1.5^\circ$ visual angle):
+For optimal tracking accuracy (mean spatial error ≤ 1.5° visual angle):
 
 | Factor | Recommended | Minimum Requirement |
 | :--- | :--- | :--- |
