@@ -476,14 +476,14 @@ const setup_panel = {
                                 </label>
                                 <div style="display: flex; gap: 6px; align-items: center;">
                                     <input type="number" id="inp-cali-alpha" class="studio-input" value="1.0" step="0.1" min="0.0001" max="1000" style="flex: 1;">
-                                    <select id="sel-alpha-preset" class="studio-select" style="width: 85px; padding: 7px 6px; font-size: 12px;">
+                                    <select id="sel-alpha-preset" class="studio-select" style="width: 105px; padding: 7px 6px; font-size: 12px;">
                                         <option value="custom">Preset...</option>
-                                        <option value="0.01">0.01</option>
+                                        <option value="1.0" selected>1.0 (13-pt)</option>
+                                        <option value="2.0">2.0 (9-pt)</option>
+                                        <option value="3.0">3.0 (5-pt)</option>
                                         <option value="0.1">0.1</option>
-                                        <option value="1.0" selected>1.0 (Def)</option>
                                         <option value="5.0">5.0</option>
                                         <option value="10.0">10.0</option>
-                                        <option value="50.0">50.0</option>
                                     </select>
                                 </div>
                             </div>
@@ -698,6 +698,20 @@ const setup_panel = {
         if (caliModeSel) {
             caliModeSel.onchange = (e) => {
                 config.caliMode = e.target.value;
+                // Auto adapt default lambda based on calibration points (5-pt: 3.0, 9-pt: 2.0, 13-pt: 1.0)
+                if (config.caliMode === '5-point') {
+                    config.caliAlpha = 3.0;
+                } else if (config.caliMode === '9-point') {
+                    config.caliAlpha = 2.0;
+                } else if (config.caliMode === '13-point' || config.caliMode === 'random' || config.caliMode === 'lissajous') {
+                    config.caliAlpha = 1.0;
+                }
+                if (inpAlpha) inpAlpha.value = String(config.caliAlpha);
+                if (selAlphaPreset) {
+                    const match = Array.from(selAlphaPreset.options).some(opt => opt.value === String(config.caliAlpha));
+                    selAlphaPreset.value = match ? String(config.caliAlpha) : 'custom';
+                }
+                syncAlphaUI();
                 updateLissajousSpeedUI();
             };
         }

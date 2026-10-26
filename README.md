@@ -169,7 +169,22 @@ const point = GazeFollower2.getCurrentPrediction();
 
 ### Calibration & Data
 
-Calibration uses **Multivariate Ridge Regression** as the built-in default engine.
+Calibration uses **Multivariate Ridge Regression** ($W = (X^T X + \lambda I)^{-1} X^T Y$) as the built-in default engine.
+
+#### Recommended Regularization ($\lambda$ / `ridgeAlpha`) by Calibration Points
+
+Because the neural feature vector is 258-dimensional, sparser calibration patterns require stronger regularization penalties to avoid overfitting and peripheral distortion:
+
+| Calibration Mode (`mode`) | Point Count | Recommended Default $\lambda$ (`ridgeAlpha`) | Rationale |
+| :--- | :---: | :---: | :--- |
+| **`'5-point'`** | 5 points | **`3.0`** (default 3) | Sparser coverage; strong regularization prevents over-rotation and boundary distortion. |
+| **`'9-point'`** | 9 points | **`2.0`** (default 2) | Standard 3×3 grid; balanced spatial smoothness and local sensitivity. |
+| **`'13-point'`** *(Default)* | 13 points | **`1.0`** (default 1) | Dense grid with complete coverage; baseline penalty yields optimal resolution. |
+
+```javascript
+// Example: set corresponding lambda before starting calibration
+GazeFollower2.setRidgeAlpha(3.0).startCalibration('5-point', 'click');
+```
 
 #### `GazeFollower2.startCalibration(mode?, method?, latency?, order?): GazeFollower2`
 Launches the full-screen interactive calibration UI.
@@ -188,6 +203,13 @@ GazeFollower2.setGazeListener((data, timestamp) => {
     console.log("Calibration finished and model fitted successfully!");
   }
 });
+```
+
+#### `GazeFollower2.setRidgeAlpha(alpha: number): GazeFollower2` & `GazeFollower2.getRidgeAlpha(): number`
+Sets or gets the Ridge regression regularization penalty $\lambda$ (defaults: 3.0 for 5-point, 2.0 for 9-point, 1.0 for 13-point).
+```javascript
+GazeFollower2.setRidgeAlpha(3.0);
+console.log(GazeFollower2.getRidgeAlpha()); // 3
 ```
 
 #### `GazeFollower2.recordScreenPosition(x: number, y: number, eventType?: string): boolean`

@@ -66,7 +66,11 @@ import GazeFollower2, {
   - 默认模型：`'GazeNet_Next.onnx'`（开源标准全精度 ONNX 权重）
   - 默认启用启发式滤波：`enableGazeFilter = true`
   - 默认滤波前瞻窗口：`look_ahead = 2`（滑动窗口总长 $2 \times 2 + 1 = 5$ 帧）
-  - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`, $\lambda = 1.0$)
+  - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`，基准 $\lambda = 1.0$)
+    - **校准点数自适应正则化系数 $\lambda$（`ridgeAlpha`）推荐规则**：
+      - **5 点标定 (`'5-point'`)**：推荐默认 $\lambda = 3.0$（快速标定点数较少，需更强 L2 正则化以防过拟合与外推失真）
+      - **9 点标定 (`'9-point'`)**：推荐默认 $\lambda = 2.0$（标准 3×3 网格平滑过渡）
+      - **13 点标定 (`'13-point'`)**：推荐默认 $\lambda = 1.0$（密集网格空间完备，高拟合精度）
 - **参数说明**：
   - `onnxModelPath` (`string | GazeFollower2Options`, 可选, 默认: `'GazeNet_Next.onnx'`)：
     - 传入字符串：模型文件的绝对或相对 URL。
@@ -97,7 +101,7 @@ import GazeFollower2, {
 | `showFaceOverlay` | `boolean` | `true` | 人脸/眼部跟踪框显示状态开关 |
 | `listener` | `Function \| null` | `null` | 当前活跃的视线回调监听函数 |
 | `caliAlgorithm` | `'ridge' \| 'svr'` | `'ridge'` | 当前使用的标定映射算法模式 |
-| `ridgeAlpha` | `number` | `1.0` | 多元岭回归正则化系数 $\lambda$ (Getter / Setter) |
+| `ridgeAlpha` | `number` | `1.0` | 多元岭回归正则化系数 $\lambda$ (Getter / Setter；5点标定默认为3，9点标定默认为2，13点标定默认为1) |
 | `ridgeCalibrator` | `MultivariateRidgeCalibration` | 实例 | 多元岭回归算法器实例 |
 | `svrCalibrator` | `SVRCalibration` | 实例 | SVR / 单通道回归算法器实例 |
 | `caliManager` | `CalibrationManager` | 实例 | 全屏标定流程管理器实例 |
@@ -230,6 +234,31 @@ SDK 默认开启 **启发式防抖滤波器 (`HeuristicFilter`)**，在保持零
     - `> 20`：直接按毫秒数处理。
   - `order` (`'random' | 'sequential'`，默认 `'random'`): 离散点呈现顺序随机或顺序。
 
+#### 标定点分布与岭回归正则化系数 $\lambda$（`ridgeAlpha`）推荐默认值规范
+
+在多元岭回归空间映射求解中，矩阵方程为 $\mathbf{W} = (\mathbf{X}_b^\top \mathbf{X}_b + \lambda \mathbf{I}_0)^{-1} \mathbf{X}_b^\top \mathbf{Y}$。由于视线特征空间高达 258 维，当标定点数较少时，样本矩阵 $\mathbf{X}_b$ 的空间覆盖稀疏，若正则化惩罚过小极易导致过拟合与非标定区域的外推失真。因此，不同标定点数对应不同的推荐默认 $\lambda$ 系数：
+
+| 标定模式 (`mode`) | 点数规模 | 推荐默认正则化系数 $\lambda$ (`ridgeAlpha`) | 理论依据与调优说明 |
+| :--- | :---: | :---: | :--- |
+| **`'5-point'`** | 5 点 | **`3.0`**（默认为 3） | 极简快速标定。样本点少，需更强的 L2 惩罚（$\lambda = 3.0$）强约束权重，防止边缘外推发散。 |
+| **`'9-point'`** | 9 点 | **`2.0`**（默认为 2） | 标准 3×3 离散网格。在保持拟合灵敏度的同时施加适度平滑（$\lambda = 2.0$），兼顾全屏过渡。 |
+| **`'13-point'`** *(默认)* | 13 点 | **`1.0`**（默认为 1） | 科学级高精度网格。样本充分且覆盖完备，基准 $\lambda = 1.0$ 可达最优空间分辨率与准确度。 |
+| **`'random'`** | 13 点 | **`1.0`** | 随机 13 点全屏安全区分布，样本数同 13 点。 |
+| **`'lissajous'`** | 连续轨迹 | **`1.0`** | 连续平滑追随动态采样，样本量丰富。 |
+
+> 📌 **调用规范**：
+> 在调用 `startCalibration` 切换到不同点数时，应同步设置对应的正则化参数：
+> ```javascript
+> // 5 点标定时：λ 默认为 3
+> GazeFollower2.setRidgeAlpha(3.0).startCalibration('5-point', 'click');
+>
+> // 9 点标定时：λ 默认为 2
+> GazeFollower2.setRidgeAlpha(2.0).startCalibration('9-point', 'click');
+>
+> // 13 点标定时：λ 默认为 1
+> GazeFollower2.setRidgeAlpha(1.0).startCalibration('13-point', 'click');
+> ```
+
 ### `recordScreenPosition(x, y, eventType?): boolean`
 *(WebGazer 兼容)* 手动将当前帧提取的 258 维特征与指定屏幕点 `(x, y)` 绑定推入校准数据集。
 
@@ -240,7 +269,16 @@ SDK 默认开启 **启发式防抖滤波器 (`HeuristicFilter`)**，在保持零
 清空所有校准点数据集，回归器重置，`this.isCalibrated = false`。
 
 ### `setRidgeAlpha(alpha): GazeFollower2` / `getRidgeAlpha(): number`
-设置或读取多元岭回归的 L2 正则化惩罚参数 $\lambda$（默认 `1.0`）。
+设置或读取多元岭回归的 L2 正则化惩罚参数 $\lambda$。
+- **参数**：`alpha` (`number`，大于 0 的浮点数)。
+- **点数规范默认值**：
+  - **5 点标定**：$\lambda$ 默认为 **`3.0`**
+  - **9 点标定**：$\lambda$ 默认为 **`2.0`**
+  - **13 点标定**：$\lambda$ 默认为 **`1.0`**（SDK 全局初始基准）
+```javascript
+GazeFollower2.setRidgeAlpha(3.0); // 适用于 5 点标定
+console.log(GazeFollower2.getRidgeAlpha()); // 3
+```
 
 ### `setLissajousSpeed(speedPxPerSec): GazeFollower2` / `getLissajousSpeed(): number`
 设置或读取利萨如连续追随轨迹的移动速度（默认 `250 px/s`）。
@@ -288,7 +326,11 @@ SDK 默认开启 **启发式防抖滤波器 (`HeuristicFilter`)**，在保持零
 - **文件**：[`src/MultivariateRidgeCalibration.js`](file:///D:/python_projects/GazeFollower2/src/MultivariateRidgeCalibration.js)
 - **构造**：`new MultivariateRidgeCalibration(lambda = 1.0)`
 - **算法模型**：
-  求解矩阵方程 $(\mathbf{X}_b^\top \mathbf{X}_b + \lambda \mathbf{I}_0)\mathbf{W} = \mathbf{X}_b^\top \mathbf{Y}$。偏置项 $\mathbf{X}_b = [1.0, f_1, \dots, f_{258}]$ 不施加惩罚。
+  求解矩阵方程 $(\mathbf{X}_b^\top \mathbf{X}_b + \lambda \mathbf{I}_0)\mathbf{W} = \mathbf{X}_b^\top \mathbf{Y}$。偏置项 $\mathbf{X}_b = [1.0, f_1, \dots, f_{258}]$ 不施加惩罚（$\mathbf{I}_0 = \operatorname{diag}(0, 1, 1, \dots, 1)$）。
+- **标定点数与正则化系数 $\lambda$ 默认规范**：
+  - **5 点标定**：$\lambda = 3.0$（默认为 3）
+  - **9 点标定**：$\lambda = 2.0$（默认为 2）
+  - **13 点标定**：$\lambda = 1.0$（默认为 1）
 - **`train(featuresArray, labelsX, labelsY): void`**：拟合生成 $259 \times 2$ 权重矩阵。
 - **`predict(features): [number, number]`**：即时预测屏幕 $(X, Y)$ 像素。
 
@@ -571,7 +613,7 @@ export interface GazeFollower2Options {
   /** 启发式滤波前瞻帧数，默认 2 (即 5 帧滑动窗口) */
   look_ahead?: number;
   lookAhead?: number;
-  /** 多元岭回归正则化系数 alpha/lambda，默认 1.0 */
+  /** 多元岭回归正则化系数 alpha/lambda (基准默认 1.0；5点标定默认为 3.0，9点标定默认为 2.0，13点标定默认为 1.0) */
   ridgeAlpha?: number;
   alpha?: number;
   /** 模型加载进度回调 (0.0 ~ 1.0) */
@@ -590,7 +632,7 @@ export interface HeuristicFilterOptions {
 
 /** 全屏空间标定配置项 */
 export interface CalibrationOptions {
-  /** 标定点分布模式，默认 '13-point' */
+  /** 标定点分布模式，默认 '13-point' (5-point 推荐 λ=3.0, 9-point 推荐 λ=2.0, 13-point 推荐 λ=1.0) */
   mode?: '13-point' | '9-point' | '5-point' | 'random' | 'lissajous';
   /** 标定交互方式，默认 'click' */
   method?: 'click' | 'auto';
@@ -598,6 +640,9 @@ export interface CalibrationOptions {
   latency?: number;
   /** 标定点呈现顺序，默认 'random' */
   order?: 'random' | 'sequential';
+  /** 针对本次标定特别指定的岭回归惩罚系数 λ (若未指定则按点数推荐默认) */
+  ridgeAlpha?: number;
+  alpha?: number;
 }
 
 /** 人脸对齐与裁剪结果数据结构 */
