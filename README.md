@@ -9,6 +9,7 @@
 <i>WebGazer-compatible drop-in alternative with SOTA neural models for online behavioral research</i><br/><br/>
 
 <p>
+  <a href="https://github.com/GanchengZhu/GazeFollower2/actions/workflows/test.yml"><img src="https://github.com/GanchengZhu/GazeFollower2/actions/workflows/test.yml/badge.svg" alt="Tests Status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-blue.svg" alt="License"></a>
   <a href="package.json"><img src="https://img.shields.io/badge/version-2.0.0-green.svg" alt="Version"></a>
   <a href="#-webgazer-migration-guide"><img src="https://img.shields.io/badge/API-WebGazer%20Compatible-brightgreen.svg" alt="WebGazer Compatible"></a>

@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        node-version: [ 18, 20, 22 ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build SDK distribution bundle
+        run: npm run build
+
+      - name: Verify distribution outputs
+        shell: bash
+        run: |
+          test -f dist/gazefollower2.min.js || exit 1
+          test -f dist/gazefollower-sdk.min.js || exit 1
+
+      - name: Run cross-device & algorithmic test suite
+        run: npm test
