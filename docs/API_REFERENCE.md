@@ -1,6 +1,6 @@
 # GazeFollower2 Web SDK (JS) — 完整 API 参考文档 (API Reference)
 
-本文档提供 **GazeFollower2 Web SDK** (`gazefollower2` v2.0.0) 的全部公开与底层模块 API 说明，涵盖全局导出、核心类 `GazeFollower2` 的生命周期、启发式滤波 (`HeuristicFilter` 与 `look_ahead`)、空间校准 (`CalibrationManager` / `MultivariateRidgeCalibration` / `SVRCalibration`)、神经网络视线估计 (`MGazeNetGazeEstimator`)、人脸对齐与裁剪 (`FaceAlignment`)、一欧元滤波器 (`OneEuroFilter`) 以及 WebGazer 无缝兼容层。
+本文档提供 **GazeFollower2 Web SDK** (`gazefollower2` v2.0.0) 的全部公开与底层模块 API 说明，涵盖全局导出、核心类 `GazeFollower2` 的生命周期、启发式滤波 (`HeuristicFilter` 与 `look_ahead`)、空间校准 (`CalibrationManager` / `MultivariateRidgeCalibration` / `SVRCalibration`)、神经网络视线估计 (`GazeEstimator`)、人脸对齐与裁剪 (`FaceAlignment`)、一欧元滤波器 (`OneEuroFilter`) 以及 WebGazer 无缝兼容层。
 
 ---
 
@@ -18,7 +18,7 @@
 10. [子模块与底层算法类 API (Sub-Module Classes)](#10-子模块与底层算法类-api-sub-module-classes)
     - 10.1 [`HeuristicFilter` (启发式滤波器)](#101-heuristicfilter-启发式滤波器)
     - 10.2 [`CalibrationManager` (校准流程管理器)](#102-calibrationmanager-校准流程管理器)
-    - 10.3 [`MGazeNetGazeEstimator` (ONNX 视线特征提取器)](#103-mgazenetgazeestimator-onnx-视线特征提取器)
+    - 10.3 [`GazeEstimator` (ONNX 视线特征提取器)](#103-gazeestimator-onnx-视线特征提取器)
     - 10.4 [`FaceAlignment` (MediaPipe 人脸对齐与眼部裁剪)](#104-facealignment-mediapipe-人脸对齐与眼部裁剪)
     - 10.5 [`MultivariateRidgeCalibration` (多元岭回归校准器)](#105-multivariateridgecalibration-多元岭回归校准器)
     - 10.6 [`SVRCalibration` (独立通道岭回归/SVR校准器)](#106-svrcalibration-独立通道岭回归svr校准器)
@@ -44,7 +44,8 @@ import GazeFollower2, {
   GazeFollower,                  // GazeFollower2 类的别名
   HeuristicFilter,               // 启发式滤波器类
   CalibrationManager,            // 交互式校准 UI 与采样管理器类
-  MGazeNetGazeEstimator,         // ONNX Runtime 深度特征提取器类
+  GazeEstimator,                 // ONNX Runtime 深度特征提取器类
+  MGazeNetGazeEstimator,         // 向后兼容别名 (GazeEstimator)
   FaceAlignment,                 // 人脸关键点对齐与裁剪类
   MultivariateRidgeCalibration,  // 多元岭回归校准器类
   SVRCalibration,                // 单输出通道岭回归校准器类
@@ -488,7 +489,7 @@ GazeFollower2 默认内置 **多元岭回归 (`MultivariateRidgeCalibration`, $\
 | `ridgeCalibrator` | `MultivariateRidgeCalibration` | `λ = 0.1` | 多元岭回归校准器实例 |
 | `svrCalibrator` | `SVRCalibration` | `λ = 0.1` | 独立通道岭回归校准器实例 |
 | `caliManager` | `CalibrationManager` | 实例 | 全屏校准 UI 与采样队列管理器实例 |
-| `estimator` | `MGazeNetGazeEstimator` | 实例 | ONNX Runtime Web 神经网络推理器实例 |
+| `estimator` | `GazeEstimator` | 实例 | ONNX Runtime Web 神经网络推理器实例 |
 | `faceAlignment` | `FaceAlignment` | 实例 | 人脸特征点对齐与图像裁剪器实例 |
 | `faceLandmarker` | `FaceLandmarker \| null` | `null` | MediaPipe Vision `FaceLandmarker` 实例 |
 | `collectedFeatures` | `number[][]` | `[]` | 当前校准会话已采集的 258 维特征矩阵 ($N \times 258$) |
@@ -546,10 +547,10 @@ GazeFollower2 默认内置 **多元岭回归 (`MultivariateRidgeCalibration`, $\
 
 ---
 
-### 10.3 `MGazeNetGazeEstimator` (ONNX 视线特征提取器)
-文件路径：`src/MGazeNetGazeEstimator.js`（可通过 `GazeFollower2.estimator` 访问）
+### 10.3 `GazeEstimator` (ONNX 视线特征提取器)
+文件路径：`src/GazeEstimator.js`（可通过 `GazeFollower2.estimator` 访问，兼容别名 `MGazeNetGazeEstimator`）
 
-- **构造函数**：`new MGazeNetGazeEstimator(modelPath)`
+- **构造函数**：`new GazeEstimator(modelPath)`
 - **属性**：
   - `modelPath: string`：当前加密模型文件路径。
   - `session: ort.InferenceSession | null`：ONNX Runtime Web 推理会话实例。

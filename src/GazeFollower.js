@@ -1,6 +1,6 @@
 import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
 import { FaceAlignment } from './FaceAlignment.js';
-import { MGazeNetGazeEstimator } from './MGazeNetGazeEstimator.js';
+import { GazeEstimator, MGazeNetGazeEstimator } from './GazeEstimator.js';
 import { MultivariateRidgeCalibration } from './MultivariateRidgeCalibration.js';
 import { SVRCalibration } from './SVRCalibration.js';
 import { HeuristicFilter } from './HeuristicFilter.js';
@@ -43,7 +43,7 @@ export class GazeFollower2 {
             ? cfg.ridgeAlpha
             : ((typeof cfg.alpha === 'number' && cfg.alpha > 0) ? cfg.alpha : 1.0);
         this.faceAlignment = new FaceAlignment();
-        this.estimator = new MGazeNetGazeEstimator(modelPath);
+        this.estimator = new GazeEstimator(modelPath);
         this.ridgeCalibrator = new MultivariateRidgeCalibration(this.ridgeAlpha);
         this.svrCalibrator = new SVRCalibration(0.1);
         this.filter = new HeuristicFilter(initialLookAhead);
@@ -510,7 +510,7 @@ export class GazeFollower2 {
     }
 
     async loadModel(modelPath = 'GazeNet_Next.onnx', progressCallback = null) {
-        this.estimator = new MGazeNetGazeEstimator(modelPath);
+        this.estimator = new GazeEstimator(modelPath);
         await this.estimator.init(progressCallback);
         return this;
     }
@@ -779,6 +779,7 @@ export const GazeFollower = GazeFollower2;
 export {
     HeuristicFilter,
     CalibrationManager,
+    GazeEstimator,
     MGazeNetGazeEstimator,
     FaceAlignment,
     MultivariateRidgeCalibration,

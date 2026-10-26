@@ -1,6 +1,6 @@
-// MGazeNetGazeEstimator.js - ONNX Runtime Web wrapper
+// GazeEstimator.js - ONNX Runtime Web wrapper
 
-export class MGazeNetGazeEstimator {
+export class GazeEstimator {
     constructor(modelPath) {
         this.modelPath = modelPath;
         this.session = null;
@@ -126,3 +126,6 @@ export class MGazeNetGazeEstimator {
         }
     }
 }
+
+// Backward compatibility alias
+export const MGazeNetGazeEstimator = GazeEstimator;

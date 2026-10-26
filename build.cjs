@@ -23,6 +23,7 @@ async function build() {
         'GazeFollower',
         'HeuristicFilter',
         'CalibrationManager',
+        'GazeEstimator',
         'MGazeNetGazeEstimator',
         'FaceAlignment',
         'MultivariateRidgeCalibration',
