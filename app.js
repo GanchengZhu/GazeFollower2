@@ -288,12 +288,7 @@ const request_camera = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
         <div class="studio-card" style="max-width: 540px; text-align: center; margin: 0 auto; padding: 36px 32px;">
-            <div style="width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 14px; background: #e8f3ff; border: 1px solid #bedaff; display: flex; align-items: center; justify-content: center;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#165dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-            </div>
+            <img src="./gazefollower.png" style="width: 68px; height: 68px; margin: 0 auto 18px; border-radius: 16px; object-fit: contain; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); display: block;" alt="GazeFollower2">
             <h2 style="font-size: 22px; font-weight: 700; color: #1d2129; margin-bottom: 8px; letter-spacing: -0.01em;">GazeFollower2 Web Eye Tracking</h2>
             <p style="color: #4e5969; font-size: 14px; line-height: 1.6; margin-bottom: 22px;">
                 Real-time in-browser gaze estimation powered by client-side neural vision models, requiring no specialized hardware.
@@ -354,16 +349,7 @@ const setup_panel = {
             <!-- Header Bar -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 36px; height: 36px; border-radius: 8px; background: #165dff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 93, 255, 0.25);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <circle cx="12" cy="12" r="4"></circle>
-                            <path d="M4.93 4.93l4.24 4.24"></path>
-                            <path d="M14.83 14.83l4.24 4.24"></path>
-                            <path d="M14.83 9.17l4.24-4.24"></path>
-                            <path d="M4.93 19.07l4.24-4.24"></path>
-                        </svg>
-                    </div>
+                    <img src="./gazefollower.png" style="width: 38px; height: 38px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);" alt="GazeFollower2">
                     <div>
                         <h2 style="font-size: 18px; font-weight: 700; color: #1d2129; letter-spacing: -0.01em;">GazeFollower2 Control Center</h2>
                         <p style="font-size: 12px; color: #86909c;">Hardware geometry & gaze calibration setup</p>

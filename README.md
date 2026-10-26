@@ -1,13 +1,30 @@
-# GazeFollower2 Web SDK (v2.0)
+<div align="center">
+  <a href="https://github.com/GanchengZhu/GazeFollower2">
+    <img width="160" height="160" src="https://raw.githubusercontent.com/GanchengZhu/GazeFollower2/main/gazefollower.png" alt="GazeFollower2 Logo">
+  </a>
 
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](package.json)
-[![WebGazer Compatible](https://img.shields.io/badge/API-WebGazer%20Compatible-brightgreen.svg)](#-webgazer-migration-guide)
-[![Live Demo](https://img.shields.io/badge/Demo-Live_Interactive_Demo-blueviolet?logo=github)](https://ganchengzhu.github.io/GazeFollower2/)
+  <h1>GazeFollower2</h1>
+
+<b>High-precision webcam eye tracking SDK for modern web browsers & iOS</b><br/>
+<i>WebGazer-compatible drop-in alternative with SOTA neural models for online behavioral research</i><br/><br/>
+
+<p>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-blue.svg" alt="License"></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/version-2.0.0-green.svg" alt="Version"></a>
+  <a href="#-webgazer-migration-guide"><img src="https://img.shields.io/badge/API-WebGazer%20Compatible-brightgreen.svg" alt="WebGazer Compatible"></a>
+  <a href="https://ganchengzhu.github.io/GazeFollower2/"><img src="https://img.shields.io/badge/Demo-Live_Interactive_Demo-blueviolet?logo=github" alt="Live Demo"></a>
+</p>
+
+<h3>
+  <a href="https://ganchengzhu.github.io/GazeFollower2/">🚀 Try Live Interactive Demo</a> • 
+  <a href="docs/API_REFERENCE.md">📖 Complete API Reference</a> •
+  <a href="#-ios-native-app-integration-wkwebview-bridge">📱 iOS Bridge</a>
+</h3>
+</div>
+
+---
 
 **GazeFollower2** is a high-precision, webcam-based eye tracking JavaScript SDK for modern web browsers & iOS. Designed with a **WebGazer-compatible API**, it provides a modern drop-in solution for online behavioral experiments, usability studies, and gaze-reactive web applications.
-
-👉 **[Try the Live Web Demo](https://ganchengzhu.github.io/GazeFollower2/)** (Zero setup, runs entirely in browser with your webcam)
 
 ---
 
