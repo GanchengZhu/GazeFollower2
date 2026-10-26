@@ -19,7 +19,8 @@
   - **Interaction Modes**: Auto-dwell (stare at target) or Click-to-calibrate.
 - **Default Heuristic Anti-Jitter Filtering**: Applies a specialized Heuristic Filter (`lookAhead = 2`) by default on predicted gaze coordinates to eliminate sudden trajectory spikes and micro-jitter without adding latency.
 - **Zero-Hardware Dependency**: Runs entirely in the client's browser with any standard webcam.
-- **jsPsych Ready**: Drop-in compatibility for online psychology and behavioral experiments.
+- **jsPsych & PsychoJS Ready**: Drop-in compatibility for online psychology and behavioral experiments.
+- **iOS Native Bridge Compatible**: Seamless integration with native iOS eye tracking apps (e.g. WKWebView + ARKit/TrueDepth) using standard JS callbacks (`window.GazeFollower2.listener`) without altering web experiment task logic.
 
 ---
 
@@ -30,7 +31,7 @@
 Modern browsers require HTTPS or `localhost` to access webcam streams:
 
 ```bash
-cd js_port
+cd GazeFollower2
 
 # Install lightweight server dependencies
 pip install fastapi uvicorn
@@ -39,7 +40,9 @@ pip install fastapi uvicorn
 python server.py
 ```
 
-Open your browser and visit: `http://localhost:8000`
+Open your browser and visit:
+- **Public Demo**: `http://localhost:8000/index.html` (or `http://localhost:8000/`) — Streamlined out-of-the-box experience powered exclusively by the SOTA `GazeNet_Next` model.
+- **Internal Dev Demo**: `http://localhost:8000/index_dev.html` (Local development only, ignored in Git) — Full evaluation panel with model comparison dropdown.
 
 ---
 
@@ -309,6 +312,35 @@ When using GazeFollower2 with jsPsych:
      fullscreen_mode: true
    };
    ```
+
+---
+
+## 🔬 PsychoJS Integration
+
+For PsychoPy / PsychoJS online experiments:
+
+```javascript
+// In 'Begin Experiment' tab:
+GazeFollower2.setGazeListener((data, timestamp) => {
+  if (data) {
+    psychoJS.experiment.addData('gaze_x', data.x);
+    psychoJS.experiment.addData('gaze_y', data.y);
+    psychoJS.experiment.addData('gaze_time', timestamp);
+  }
+}).begin();
+```
+
+---
+
+## 📱 iOS Native App Integration (WKWebView Bridge)
+
+If you are developing a native iOS App (or running jsPsych / PsychoJS experiments inside an iOS `WKWebView`), the app can inject high-precision native ARKit / TrueDepth tracking data directly into GazeFollower2 without altering web application logic:
+
+- **Coordinate Injection**: Native app calls `window.GazeFollower2.listener({ x: screenX, y: screenY }, performance.now())` to drive web gaze events.
+- **Polling Cache**: Native app updates `window.GazeFollower2.targetX` and `window.GazeFollower2.targetY` for instantaneous synchronous `getCurrentPrediction()` reads.
+- **Message Handlers**: Register `GazeFollowerBridge` to receive lifecycle requests (`begin`, `end`, `pause`, `resume`, `calibrate`) from JavaScript.
+
+> Detailed integration patterns and full Swift/JS code examples are documented in [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md#13-ios-native-app-bridge-wkwebview-对接规范).
 
 ---
 
