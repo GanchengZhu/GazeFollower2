@@ -12,7 +12,8 @@
   },
   "scripts": {
     "build": "node build.cjs",
-    "start": "python server.py"
+    "start": "python server.py",
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [
     "eye-tracking",

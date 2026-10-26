@@ -1,7 +1,10 @@
-name: Deploy to GitHub Pages
+name: Test & Deploy to GitHub Pages
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -14,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  test-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,7 +25,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Multi-Device & Cross-Browser Test Suite
+        run: npm test
+
       - name: Deploy to gh-pages branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"

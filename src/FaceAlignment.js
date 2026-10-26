@@ -1,13 +1,13 @@
 // FaceAlignment.js - Extracts face and eye patches based on MediaPipe landmarks
 export class FaceAlignment {
     constructor() {
-        // Offscreen canvas for cropping
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+        // Offscreen canvas for cropping (guarded for non-browser/test environments)
+        this.canvas = (typeof document !== 'undefined') ? document.createElement('canvas') : null;
+        this.ctx = this.canvas ? this.canvas.getContext('2d', { willReadFrequently: true }) : null;
         
         // Reusable temporary canvas for resizing
-        this.tmpCanvas = document.createElement('canvas');
-        this.tmpCtx = this.tmpCanvas.getContext('2d', { willReadFrequently: true });
+        this.tmpCanvas = (typeof document !== 'undefined') ? document.createElement('canvas') : null;
+        this.tmpCtx = this.tmpCanvas ? this.tmpCanvas.getContext('2d', { willReadFrequently: true }) : null;
         
         this.lip_vertices = [61, 91, 14, 178, 402, 324, 95];
         this.left_vertices = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7, 33];

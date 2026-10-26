@@ -16,8 +16,9 @@
 </p>
 
 <h3>
-  <a href="https://ganchengzhu.github.io/GazeFollower2/">🚀 Try Live Interactive Demo</a> • 
-  <a href="docs/API_REFERENCE.md">📖 Complete API Reference</a> •
+  <a href="https://ganchengzhu.github.io/GazeFollower2/">🚀 Live Interactive Demo</a> • 
+  <a href="https://ganchengzhu.github.io/GazeFollower2/test_browser.html">🔍 Device Diagnostics</a> • 
+  <a href="docs/API_REFERENCE.md">📖 API Reference</a> •
   <a href="#-ios-native-app-integration-wkwebview-bridge">📱 iOS Bridge</a>
 </h3>
 </div>
@@ -418,6 +419,34 @@ For optimal tracking accuracy (mean spatial error ≤ 1.5° visual angle):
 | **Network Protocol** | **HTTPS** or **`http://localhost`** | Unencrypted remote HTTP is strictly blocked by browsers |
 
 ---
+
+---
+
+## 🧪 Testing & Cross-Device Compatibility
+
+GazeFollower2 includes an automated multi-environment test suite and an interactive in-browser diagnostic tool to ensure robust operation across diverse hardware, operating systems, and browsers.
+
+### 1. Automated Unit & Integration Tests (Node.js)
+
+Run the automated test suite covering ridge calibration convergence, filter latency/jitter, High-DPI/Retina display scaling, mobile viewport geometry, and WebGazer API surface compatibility:
+
+```bash
+npm test
+```
+All 23 test suites run in under 300ms using Node's native test runner with zero extra dependencies.
+
+### 2. Interactive In-Browser Hardware Diagnostics (`test_browser.html`)
+
+Test real hardware and browser capabilities directly on any desktop or mobile device (iPhone, iPad, MacBook, Android, Windows):
+
+👉 **[Launch Device & Browser Diagnostics Tool](https://ganchengzhu.github.io/GazeFollower2/test_browser.html)**
+
+What it probes automatically:
+- **Display & Scaling**: Tests `window.devicePixelRatio` (1x vs 2x/3x Retina) and responsive viewport bounds.
+- **Compute Acceleration**: Probes WebAssembly SIMD (128-bit vectorization), WebGL 2.0, and WebGPU availability.
+- **WebRTC Camera Hardware**: Probes camera stream permissions, device labels, physical resolutions, and aspect ratios (4:3 vs 16:9).
+- **Algorithmic Throughput Benchmark**: Measures real-time solve latency (ms/solve) for 13-point ridge regression and filtering throughput (coords/sec).
+- **Compatibility Tier**: Rates the device into Tier 1 (Optimal Workstation), Tier 2 (Mobile/Tablet), or Tier 3 (Limited).
 
 ## 🛠 Building the Bundle
 
