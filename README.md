@@ -3,8 +3,11 @@
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](package.json)
 [![WebGazer Compatible](https://img.shields.io/badge/API-WebGazer%20Compatible-brightgreen.svg)](#-webgazer-migration-guide)
+[![Live Demo](https://img.shields.io/badge/Demo-Live_Interactive_Demo-blueviolet?logo=github)](https://ganchengzhu.github.io/GazeFollower2/)
 
-**GazeFollower2** is a high-precision, webcam-based eye tracking JavaScript SDK for modern web browsers. Designed with a **WebGazer-compatible API**, it provides a modern drop-in solution for online behavioral experiments, usability studies, and gaze-reactive web applications.
+**GazeFollower2** is a high-precision, webcam-based eye tracking JavaScript SDK for modern web browsers & iOS. Designed with a **WebGazer-compatible API**, it provides a modern drop-in solution for online behavioral experiments, usability studies, and gaze-reactive web applications.
+
+👉 **[Try the Live Web Demo](https://ganchengzhu.github.io/GazeFollower2/)** (Zero setup, runs entirely in browser with your webcam)
 
 ---
 
