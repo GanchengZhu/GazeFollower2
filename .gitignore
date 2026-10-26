@@ -21,3 +21,15 @@ __pycache__/
 
 # Temporary user data
 temp_chrome_user_data/
+
+# Internal / Proprietary Model Weights (Only GazeNet_Next is public)
+*.onnx
+*.bin
+*.pth
+*.mnn
+!GazeNet_Next.onnx
+!GazeNet_Next.bin
+
+# Internal Dev Demo (Keep local only for internal testing)
+index_dev.html
+app_dev.js
