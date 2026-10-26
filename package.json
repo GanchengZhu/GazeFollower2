@@ -4,13 +4,14 @@
   "description": "GazeFollower2: High-precision webcam eye tracking SDK for modern browsers with WebGazer-compatible APIs.",
   "main": "dist/gazefollower2.min.js",
   "module": "dist/gazefollower2.min.js",
+  "type": "module",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",
     "rollup": "^4.63.1",
     "terser": "^5.51.2"
   },
   "scripts": {
-    "build": "node build.js",
+    "build": "node build.cjs",
     "start": "python server.py"
   },
   "keywords": [
@@ -24,6 +25,5 @@
     "onnxruntime-web"
   ],
   "author": "GazeFollower Team",
-  "license": "CC-BY-NC-SA-4.0",
-  "type": "commonjs"
+  "license": "CC-BY-NC-SA-4.0"
 }
