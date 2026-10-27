@@ -38,6 +38,259 @@ const jsPsych = initJsPsych({
     }
 });
 
+// Auto-detect browser language: default to 'en' unless user environment is Chinese 'zh'
+let currentLang = localStorage.getItem('gf2_lang') || 
+    (((navigator.language || navigator.userLanguage || '').toLowerCase().startsWith('zh')) ? 'zh' : 'en');
+
+const I18N = {
+    en: {
+        langBtn: "中文",
+        grantCameraTitle: "GazeFollower2 Web Eye Tracking",
+        grantCameraDesc: "Real-time in-browser gaze estimation powered by client-side neural vision models, requiring no specialized hardware.",
+        grantCameraPrivacy: "Please allow camera access when prompted by your browser. Video frames are processed strictly within your browser and never uploaded.",
+        grantCameraBtn: "Grant Camera Access",
+
+        fullscreenTitle: "Fullscreen Calibration & Tracking",
+        fullscreenDesc: "To maintain screen coordinate mapping accuracy and metric visual angle calculations, the session will operate in fullscreen mode.",
+        fullscreenBtn: "Enter Fullscreen",
+
+        controlCenterTitle: "GazeFollower2 Control Center",
+        controlCenterSubtitle: "Hardware geometry & gaze calibration setup",
+        ready: "Ready",
+        initFailed: "Init Failed",
+        initializing: "Initializing...",
+        faceDetected: "Face Detected",
+        searchingFace: "Searching Face...",
+        faceDetecting: "Detecting...",
+
+        liveViewfinder: "Live Viewfinder",
+        throughput: "Throughput",
+        pipelineTotal: "Pipeline Total",
+        mediapipe: "MediaPipe",
+        gazeNet: "GazeNet",
+
+        inferenceModelTitle: "Inference Model",
+        modelTagFP16: "FP16 Half-Precision (~3.8 MB)",
+        modelTagFP32: "FP32 Full-Precision (~7.6 MB)",
+        optFP16: "GazeNet_Next FP16 (3.8 MB - Half-Precision Fast)",
+        optFP32: "GazeNet_Next FP32 (7.6 MB - Full-Precision SOTA)",
+        modelHint: "Hot-switch models to compare download payload and GPU inference latency.",
+
+        visionPreproc: "Vision Preprocessing",
+        gazeSmoothing: "Gaze Smoothing (Heuristic Filter)",
+        enabledDefault: "Enabled (Default)",
+        disabledRaw: "Disabled (Raw)",
+        lookAheadLabel: "look_ahead",
+        lookAheadHint: "Default: 2",
+
+        calibrationSetup: "Calibration Setup",
+        targetPattern: "Target Pattern",
+        opt13Pt: "13-Point Enhanced Grid (Recommended)",
+        opt9Pt: "9-Point Standard Grid",
+        opt5Pt: "5-Point Fast Grid",
+        optRandom: "13-Point Random Distribution",
+        optLissajous: "Lissajous Continuous Pursuit",
+        targetOrder: "Target Order",
+        optRandomOrder: "Randomized (Prevents anticipation - Default)",
+        optSequentialOrder: "Sequential Order",
+        pursuitSpeed: "Pursuit Speed",
+        presetLabel: "Preset...",
+        speedSlow: "150 px/s (Slow)",
+        speedGentle: "200 px/s (Smooth)",
+        speedRec: "250 px/s (Recommended)",
+        speedMod: "350 px/s (Moderate)",
+        speedFast: "500 px/s (Fast)",
+        interactionMode: "Interaction Mode",
+        optManualClick: "Manual Click (Tactile Confirmation)",
+        optAutoDwell: "Auto Dwell (1.5s Fixation)",
+        caliAlgorithm: "Calibration Algorithm",
+        optRidge: "Multivariate Ridge (Analytical - Default)",
+        optSVR: "Support Vector Regression (RBF Kernel)",
+        ridgeAlpha: "Ridge Regularization (λ)",
+        alphaDefault: "Default: 1.0",
+        alpha5pt: "3.0 (5-pt Anti-Divergence)",
+        alpha9pt: "2.0 (9-pt Standard)",
+        alpha13pt: "1.0 (13-pt Enhanced)",
+        latencyComp: "Hardware Latency Compensation",
+        latencyFrames: "frames (~{ms} ms{def})",
+
+        displayGeometry: "Display & Viewing Geometry",
+        presetCustom: "Custom Size...",
+        screenWidth: "Screen Width",
+        screenHeight: "Screen Height",
+        eyeDistance: "Eye Distance",
+        geoHint: "Please enter physical screen width (cm), height (cm), and viewing distance (cm) for D3 visual angle (θ°) and physical accuracy/precision evaluation.",
+
+        validationProtocol: "Validation Protocol",
+        runValidation: "Run Accuracy Validation",
+        optValYes: "Yes (D3 Accuracy & Precision Evaluation)",
+        optValNo: "No (Skip directly to tracking)",
+        valPattern: "Validation Pattern",
+        optValRandom: "Random (13 Points - Default)",
+        optVal9Pt: "9-Point Standard",
+        optVal5Pt: "5-Point Fast",
+
+        startCalibrationBtn: "Start Calibration",
+
+        caliStarting: "Starting Calibration...",
+        caliFixate: "Please maintain steady fixation on each target on screen.",
+        caliSuccess: "Calibration Completed Successfully!",
+        valTargetHud: "Validation: Target {idx}",
+
+        valReportTitle: "D3 Accuracy & Precision Analytics",
+        valReportSubtitle: "Display: {w} × {h} cm @ {d} cm Distance • {algo} ({count} validation points • D3 Sliding Window)",
+        gradeExcellent: "★ Excellent Accuracy (Research Grade)",
+        gradeGood: "✓ Good Accuracy (Interactive Grade)",
+        gradeModerate: "▲ Moderate Accuracy (Maintain steady posture)",
+        gradeRecalib: "⚠ Recalibration Recommended",
+        meanAccuracyTitle: "D3 Mean Accuracy (ACC)",
+        meanPrecisionTitle: "D3 Mean Precision (Pre / RMS)",
+        screenGeometryTitle: "Screen & Viewing Geometry",
+        displacementLabel: "{px} px • {mm} mm displacement",
+        precisionSubLabel: "RMS: {px} px • STD: {deg}° ({cm} cm)",
+        tableTitle: "Spatial Validation Details (D3 Best Fixation Window)",
+        tableSubtitle: "Targets 1 to {count}",
+        colNum: "#",
+        colTargetPos: "Target Position",
+        colPredGaze: "D3 Predicted Gaze",
+        colAccCmPx: "D3 ACC (cm / px)",
+        colAccDeg: "D3 ACC (°)",
+        colPreRms: "D3 Pre RMS (cm / °)",
+        launchLiveTracking: "Launch Live Tracking",
+
+        liveTrackingActive: "Live Gaze Tracking",
+        pressSpaceExit: "Press [Space] to Exit",
+        followReticle: "Follow the tracking reticle with your eyes across the screen"
+    },
+    zh: {
+        langBtn: "English",
+        grantCameraTitle: "GazeFollower2 网页端视线追踪",
+        grantCameraDesc: "基于端侧轻量级神经网络视觉模型的实时视线估计，无需任何外部眼动硬件。",
+        grantCameraPrivacy: "请在浏览器提示时允许摄像头访问权限。视频画面仅在本地浏览器内存中计算，绝不上传云端。",
+        grantCameraBtn: "允许摄像头访问",
+
+        fullscreenTitle: "全屏标定与视线追踪",
+        fullscreenDesc: "为确保屏幕像素坐标精确映射并计算毫米级视角色度量，实验将在全屏模式下运行。",
+        fullscreenBtn: "进入全屏模式",
+
+        controlCenterTitle: "GazeFollower2 控制中心",
+        controlCenterSubtitle: "屏幕空间几何与视线校准参数配置",
+        ready: "就绪",
+        initFailed: "初始化失败",
+        initializing: "初始化中...",
+        faceDetected: "已检测到人脸",
+        searchingFace: "寻找人脸中...",
+        faceDetecting: "检测中...",
+
+        liveViewfinder: "实时取景画面",
+        throughput: "处理吞吐",
+        pipelineTotal: "全链路延迟",
+        mediapipe: "MediaPipe",
+        gazeNet: "GazeNet",
+
+        inferenceModelTitle: "推理模型选项",
+        modelTagFP16: "FP16 半精度 (~3.8 MB)",
+        modelTagFP32: "FP32 全精度 (~7.6 MB)",
+        optFP16: "GazeNet_Next FP16 (3.8 MB - 半精度极速推荐)",
+        optFP32: "GazeNet_Next FP32 (7.6 MB - 原始全精度基准)",
+        modelHint: "支持热切换模型，可直观对比模型体积与 GPU 实时推理耗时。",
+
+        visionPreproc: "视觉预处理与滤波",
+        gazeSmoothing: "视线防抖平滑 (启发式滤波)",
+        enabledDefault: "启用 (默认推荐)",
+        disabledRaw: "关闭 (原始输出)",
+        lookAheadLabel: "前瞻窗口 look_ahead",
+        lookAheadHint: "默认: 2",
+
+        calibrationSetup: "标定参数配置",
+        targetPattern: "标定点阵排布",
+        opt13Pt: "13 点增强网格 (推荐)",
+        opt9Pt: "9 点标准网格",
+        opt5Pt: "5 点快速网格",
+        optRandom: "13 点随机空间分布",
+        optLissajous: "Lissajous 连续平滑追随",
+        targetOrder: "呈现顺序",
+        optRandomOrder: "随机顺序 (防止预判 - 默认)",
+        optSequentialOrder: "顺序呈现",
+        pursuitSpeed: "追随移动速度",
+        presetLabel: "预设速度...",
+        speedSlow: "150 px/s (慢速)",
+        speedGentle: "200 px/s (平缓)",
+        speedRec: "250 px/s (推荐)",
+        speedMod: "350 px/s (适中)",
+        speedFast: "500 px/s (快速)",
+        interactionMode: "交互采集方式",
+        optManualClick: "手动点击 (触觉确认)",
+        optAutoDwell: "自动注视停留 (1.5s 凝视)",
+        caliAlgorithm: "标定拟合算法",
+        optRidge: "多元岭回归 (解析闭式解 - 默认)",
+        optSVR: "支持向量回归 (RBF 核函数)",
+        ridgeAlpha: "岭回归正则化系数 (λ)",
+        alphaDefault: "默认: 1.0",
+        alpha5pt: "3.0 (5 点防外推失真)",
+        alpha9pt: "2.0 (9 点标准)",
+        alpha13pt: "1.0 (13 点完备拟合)",
+        latencyComp: "硬件时延补偿",
+        latencyFrames: "帧 (~{ms} ms{def})",
+
+        displayGeometry: "屏幕显示与视距几何",
+        presetCustom: "自定义尺寸...",
+        screenWidth: "屏幕宽度",
+        screenHeight: "屏幕高度",
+        eyeDistance: "视距",
+        geoHint: "请输入显示器物理宽高 (cm) 及观看距离 (cm)，用于计算视角色误差 (D3 标准) 及精确度量。",
+
+        validationProtocol: "精度验证协议",
+        runValidation: "执行精度验证",
+        optValYes: "执行 (评估 D3 准确度与空间离散度)",
+        optValNo: "跳过 (直接进入视线追踪)",
+        valPattern: "验证点阵排布",
+        optValRandom: "13 点随机分布 (默认)",
+        optVal9Pt: "9 点标准网格",
+        optVal5Pt: "5 点快速网格",
+
+        startCalibrationBtn: "开始标定",
+
+        caliStarting: "准备开始标定...",
+        caliFixate: "请用视线跟随屏幕中央出现的注视目标点并保持凝视。",
+        caliSuccess: "标定完成！",
+        valTargetHud: "精度验证: 目标 {idx}",
+
+        valReportTitle: "D3 视线精度与空间离散度分析报告",
+        valReportSubtitle: "显示器: {w} × {h} cm @ {d} cm 视距 • {algo} ({count} 验证点 • D3 滑动窗口)",
+        gradeExcellent: "★ 优异精度 (科研/学术级)",
+        gradeGood: "✓ 良好精度 (人机交互级)",
+        gradeModerate: "▲ 中等精度 (建议保持坐姿稳定)",
+        gradeRecalib: "⚠ 建议重新标定",
+        meanAccuracyTitle: "D3 平均视角色误差 (准确度)",
+        meanPrecisionTitle: "D3 采样离散抖动 (精度 / RMS)",
+        screenGeometryTitle: "显示器物理空间几何",
+        displacementLabel: "{px} px • {mm} mm 空间位移",
+        precisionSubLabel: "RMS: {px} px • STD: {deg}° ({cm} cm)",
+        tableTitle: "各目标点实测明细 (D3 最佳凝视窗口)",
+        tableSubtitle: "目标点 1 至 {count}",
+        colNum: "#",
+        colTargetPos: "目标位置",
+        colPredGaze: "D3 预测注视点",
+        colAccCmPx: "空间偏差 (cm / px)",
+        colAccDeg: "视角色误差 (°)",
+        colPreRms: "离散度 RMS (cm / °)",
+        launchLiveTracking: "启动实时追踪",
+
+        liveTrackingActive: "实时视线追踪进行中",
+        pressSpaceExit: "按 [空格键] 退出",
+        followReticle: "请用双眼在屏幕范围内移动，注视准星将实时跟随视线"
+    }
+};
+
+function t(key, params = {}) {
+    let str = (I18N[currentLang] && I18N[currentLang][key]) || (I18N['en'] && I18N['en'][key]) || key;
+    for (const [k, v] of Object.entries(params)) {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+    }
+    return str;
+}
+
 let config = {
     modelPath: 'models/GazeNet_Next_fp16.onnx',
     caliMode: '13-point',
@@ -73,199 +326,103 @@ function getScreenGeometry(screenWidthCm, screenHeightCm, eyeDistCm) {
     const cmPerPx = (cmPerPxX + cmPerPxY) / 2;
     const mmPerPx = cmPerPx * 10;
 
-    // Pixels per cm & DPI along X and Y axes
-    const pxPerCmX = screenW / widthCm;
-    const pxPerCmY = screenH / heightCm;
-    const dpiX = pxPerCmX * 2.54;
-    const dpiY = pxPerCmY * 2.54;
+    // Display DPI / PPI
+    const diagInches = Math.sqrt(Math.pow(widthCm / 2.54, 2) + Math.pow(heightCm / 2.54, 2));
+    const diagPx = Math.sqrt(Math.pow(screenW, 2) + Math.pow(screenH, 2));
+    const ppi = diagInches > 0 ? (diagPx / diagInches) : 141.2;
 
-    // Pixels per degree (PPD) along X and Y axes:
-    // 1 deg at distance distCm subtends distCm * (pi / 180) cm
-    const cmPerDeg = distCm * (Math.PI / 180);
-    const ppdX = pxPerCmX * cmPerDeg;
-    const ppdY = pxPerCmY * cmPerDeg;
-
-    // Diagonal summary for badge display
-    const diagCm = Math.sqrt(widthCm * widthCm + heightCm * heightCm);
-    const diagInches = diagCm / 2.54;
-    const diagPx = Math.sqrt(screenW * screenW + screenH * screenH);
-    const ppi = diagPx / diagInches;
-
-    const cmToDeg = (dCm) => 2 * Math.atan(dCm / (2 * distCm)) * (180 / Math.PI);
+    // Pixels per degree (PPD) at the specified eye-to-screen distance
+    const ppdX = (screenW / 2) / (Math.atan((widthCm / 2) / distCm) * (180 / Math.PI));
+    const ppdY = (screenH / 2) / (Math.atan((heightCm / 2) / distCm) * (180 / Math.PI));
+    const ppd = (ppdX + ppdY) / 2;
 
     return {
-        screenW,
-        screenH,
-        widthCm,
-        heightCm,
-        distCm,
-        diagCm,
-        diagInches,
-        diagPx,
-        ppi,
-        dpiX,
-        dpiY,
-        cmPerPxX,
-        cmPerPxY,
-        mmPerPxX,
-        mmPerPxY,
-        cmPerPx,
-        mmPerPx,
-        ppdX,
-        ppdY,
-        cmToDeg,
-        calcVisualAngle: (errPx) => {
-            const errCm = errPx * cmPerPx;
-            const deg = cmToDeg(errCm);
-            return { errCm, deg };
-        }
+        screenW, screenH, widthCm, heightCm, distCm,
+        cmPerPxX, cmPerPxY, mmPerPxX, mmPerPxY, cmPerPx, mmPerPx,
+        ppi, ppdX, ppdY, ppd
     };
 }
 
-/**
- * D3 Sliding-Window Evaluation Algorithm for Eye Tracking Accuracy & Precision.
- * Slides a window of size `winSize` (default 8 frames, stride 1) over a point's gaze samples,
- * selecting the optimal fixation window that minimizes d3 = ACC^2 * STD^2.
- *
- * @param {Array<{x: number, y: number, timestamp?: number}>} samples Gaze predictions in pixels
- * @param {{x: number, y: number}} targetPx Ground-truth target coordinates in pixels
- * @param {ReturnType<typeof getScreenGeometry>} geometry Screen & viewing geometry
- * @param {number} [winSize=8] Sliding window size in frames
- */
-function computeD3Metrics(samples, targetPx, geometry, winSize = 8) {
-    const valid = (samples || []).filter(s => s && Number.isFinite(s.x) && Number.isFinite(s.y));
-    const tx = targetPx.x;
-    const ty = targetPx.y;
+// Convert 2D Euclidean distance in pixels to visual angle in degrees
+function pixelDistanceToVisualAngle(dxPx, dyPx, screenWidthCm, screenHeightCm, eyeDistCm) {
+    const geo = getScreenGeometry(screenWidthCm, screenHeightCm, eyeDistCm);
+    const dxCm = dxPx * geo.cmPerPxX;
+    const dyCm = dyPx * geo.cmPerPxY;
+    const distCm = Math.sqrt(dxCm * dxCm + dyCm * dyCm);
+    const angleRad = 2 * Math.atan(distCm / (2 * geo.distCm));
+    const angleDeg = angleRad * (180 / Math.PI);
+    return { angleDeg, distCm, distMm: distCm * 10 };
+}
 
+// Compute D3 Sliding-Window Accuracy (ACC) & Precision (PRE/RMS) metrics
+function computeD3Metrics(samples, targetPx, screenWidthCm, screenHeightCm, eyeDistCm, windowSize = 25) {
+    const valid = samples.filter(s => s && Number.isFinite(s.x) && Number.isFinite(s.y));
     if (valid.length === 0) {
         return {
-            predicted: { x: NaN, y: NaN },
-            errPx: NaN,
-            errCm: NaN,
-            deg: NaN,
-            accPx: NaN,
-            accCm: NaN,
-            accMm: NaN,
-            accDeg: NaN,
-            rmsPx: NaN,
-            rmsCm: NaN,
-            rmsMm: NaN,
-            rmsDeg: NaN,
-            stdPx: NaN,
-            stdCm: NaN,
-            stdDeg: NaN,
-            d3: NaN,
-            totalSamples: 0,
-            windowSize: 0
+            accPx: NaN, accCm: NaN, accMm: NaN, accDeg: NaN,
+            rmsPx: NaN, rmsCm: NaN, rmsMm: NaN, rmsDeg: NaN,
+            stdPx: NaN, stdCm: NaN, stdDeg: NaN,
+            d3: NaN, bestWindowIndex: -1, totalSamples: 0
         };
     }
 
-    const effWin = Math.min(winSize, valid.length);
-    const gtCmX = tx * geometry.cmPerPxX;
-    const gtCmY = ty * geometry.cmPerPxY;
-    const gtDegX = tx / geometry.ppdX;
-    const gtDegY = ty / geometry.ppdY;
-
-    let bestIdx = 0;
-    let minD3 = Infinity;
-    const windows = [];
+    const effWin = Math.min(windowSize, valid.length);
+    let best = null;
 
     for (let i = 0; i <= valid.length - effWin; i++) {
         const win = valid.slice(i, i + effWin);
+        let sumX = 0, sumY = 0;
+        win.forEach(p => { sumX += p.x; sumY += p.y; });
+        const meanX = sumX / effWin;
+        const meanY = sumY / effWin;
 
-        let sumPxX = 0, sumPxY = 0;
-        let sumCmX = 0, sumCmY = 0;
-        let sumDegX = 0, sumDegY = 0;
+        const dxPx = meanX - targetPx.x;
+        const dyPx = meanY - targetPx.y;
+        const accPx = Math.sqrt(dxPx * dxPx + dyPx * dyPx);
+        const { angleDeg: accDeg, distCm: accCm } = pixelDistanceToVisualAngle(dxPx, dyPx, screenWidthCm, screenHeightCm, eyeDistCm);
 
-        const ptsCm = [];
-        const ptsDeg = [];
-
-        for (let k = 0; k < effWin; k++) {
-            const pxX = win[k].x;
-            const pxY = win[k].y;
-            const cmX = pxX * geometry.cmPerPxX;
-            const cmY = pxY * geometry.cmPerPxY;
-            const degX = pxX / geometry.ppdX;
-            const degY = pxY / geometry.ppdY;
-
-            sumPxX += pxX;
-            sumPxY += pxY;
-            sumCmX += cmX;
-            sumCmY += cmY;
-            sumDegX += degX;
-            sumDegY += degY;
-
-            ptsCm.push({ x: cmX, y: cmY });
-            ptsDeg.push({ x: degX, y: degY });
+        let sumSqrDiffPx = 0, sumSqrDiffCm = 0;
+        let diffAngles = [];
+        for (let j = 0; j < effWin - 1; j++) {
+            const sx = win[j + 1].x - win[j].x;
+            const sy = win[j + 1].y - win[j].y;
+            sumSqrDiffPx += (sx * sx + sy * sy);
+            const d = pixelDistanceToVisualAngle(sx, sy, screenWidthCm, screenHeightCm, eyeDistCm);
+            sumSqrDiffCm += (d.distCm * d.distCm);
+            diffAngles.push(d.angleDeg);
         }
 
-        const meanPxX = sumPxX / effWin;
-        const meanPxY = sumPxY / effWin;
-        const meanCmX = sumCmX / effWin;
-        const meanCmY = sumCmY / effWin;
-        const meanDegX = sumDegX / effWin;
-        const meanDegY = sumDegY / effWin;
+        const rmsPx = effWin > 1 ? Math.sqrt(sumSqrDiffPx / (effWin - 1)) : 0;
+        const rmsCm = effWin > 1 ? Math.sqrt(sumSqrDiffCm / (effWin - 1)) : 0;
+        const rmsDeg = effWin > 1 ? Math.sqrt(diffAngles.reduce((acc, a) => acc + a * a, 0) / (effWin - 1)) : 0;
 
-        // Accuracy (Euclidean distance between window mean and ground truth)
-        const accPx = Math.hypot(meanPxX - tx, meanPxY - ty);
-        const accCm = Math.hypot(meanCmX - gtCmX, meanCmY - gtCmY);
-        const accDeg = Math.hypot(meanDegX - gtDegX, meanDegY - gtDegY);
-
-        // Spatial STD within window
-        let varPx = 0, varCm = 0, varDeg = 0;
-        for (let k = 0; k < effWin; k++) {
-            varPx += (win[k].x - meanPxX) ** 2 + (win[k].y - meanPxY) ** 2;
-            varCm += (ptsCm[k].x - meanCmX) ** 2 + (ptsCm[k].y - meanCmY) ** 2;
-            varDeg += (ptsDeg[k].x - meanDegX) ** 2 + (ptsDeg[k].y - meanDegY) ** 2;
-        }
-        const stdPx = Math.sqrt(varPx / effWin);
-        const stdCm = Math.sqrt(varCm / effWin);
-        const stdDeg = Math.sqrt(varDeg / effWin);
-
-        // Sample-to-sample RMS precision within window
-        let rmsPx = 0, rmsCm = 0, rmsDeg = 0;
-        if (effWin >= 2) {
-            let diffSqPx = 0, diffSqCm = 0, diffSqDeg = 0;
-            for (let k = 0; k < effWin - 1; k++) {
-                diffSqPx += (win[k + 1].x - win[k].x) ** 2 + (win[k + 1].y - win[k].y) ** 2;
-                diffSqCm += (ptsCm[k + 1].x - ptsCm[k].x) ** 2 + (ptsCm[k + 1].y - ptsCm[k].y) ** 2;
-                diffSqDeg += (ptsDeg[k + 1].x - ptsDeg[k].x) ** 2 + (ptsDeg[k + 1].y - ptsDeg[k].y) ** 2;
-            }
-            rmsPx = Math.sqrt(diffSqPx / (effWin - 1));
-            rmsCm = Math.sqrt(diffSqCm / (effWin - 1));
-            rmsDeg = Math.sqrt(diffSqDeg / (effWin - 1));
-        }
-
-        // D3 criterion: d3 = ACC^2 * STD^2
-        const d3Val = (accDeg ** 2) * (stdDeg ** 2);
-
-        windows.push({
-            meanPxX,
-            meanPxY,
-            accPx,
-            accCm,
-            accDeg,
-            stdPx,
-            stdCm,
-            stdDeg,
-            rmsPx,
-            rmsCm,
-            rmsDeg,
-            d3Val
+        let sumDevPx = 0, sumDevCm = 0, sumDevDeg = 0;
+        win.forEach(p => {
+            const devX = p.x - meanX;
+            const devY = p.y - meanY;
+            sumDevPx += (devX * devX + devY * devY);
+            const dev = pixelDistanceToVisualAngle(devX, devY, screenWidthCm, screenHeightCm, eyeDistCm);
+            sumDevCm += (dev.distCm * dev.distCm);
+            sumDevDeg += (dev.angleDeg * dev.angleDeg);
         });
+        const stdPx = Math.sqrt(sumDevPx / effWin);
+        const stdCm = Math.sqrt(sumDevCm / effWin);
+        const stdDeg = Math.sqrt(sumDevDeg / effWin);
 
-        if (d3Val < minD3) {
-            minD3 = d3Val;
-            bestIdx = i;
+        const d3Val = Math.sqrt(accDeg * accDeg + rmsDeg * rmsDeg);
+
+        if (!best || d3Val < best.d3Val) {
+            best = {
+                d3Val, accPx, accCm, accDeg,
+                rmsPx, rmsCm, rmsDeg,
+                stdPx, stdCm, stdDeg,
+                meanX, meanY, idx: i
+            };
         }
     }
 
-    const best = windows[bestIdx];
+    const bestIdx = best ? best.idx : 0;
     return {
-        predicted: { x: best.meanPxX, y: best.meanPxY },
-        errPx: best.accPx,
-        errCm: best.accCm,
-        deg: best.accDeg,
         accPx: best.accPx,
         accCm: best.accCm,
         accMm: best.accCm * 10,
@@ -287,19 +444,19 @@ function computeD3Metrics(samples, targetPx, geometry, winSize = 8) {
 // 1. Onboarding & Camera Access Phase
 const request_camera = {
     type: jsPsychHtmlButtonResponse,
-    stimulus: `
+    stimulus: () => `
         <div class="studio-card" style="max-width: 540px; text-align: center; margin: 0 auto; padding: 36px 32px;">
             <img src="./gazefollower.png" style="width: 68px; height: 68px; margin: 0 auto 18px; border-radius: 16px; object-fit: contain; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); display: block;" alt="GazeFollower2">
-            <h2 style="font-size: 22px; font-weight: 700; color: #1d2129; margin-bottom: 8px; letter-spacing: -0.01em;">GazeFollower2 Web Eye Tracking</h2>
+            <h2 style="font-size: 22px; font-weight: 700; color: #1d2129; margin-bottom: 8px; letter-spacing: -0.01em;">${t('grantCameraTitle')}</h2>
             <p style="color: #4e5969; font-size: 14px; line-height: 1.6; margin-bottom: 22px;">
-                Real-time in-browser gaze estimation powered by client-side neural vision models, requiring no specialized hardware.
+                ${t('grantCameraDesc')}
             </p>
             <p style="font-size: 13px; color: #86909c; line-height: 1.5; margin-bottom: 8px;">
-                Please allow camera access when prompted by your browser. Video frames are processed strictly within your browser and never uploaded.
+                ${t('grantCameraPrivacy')}
             </p>
         </div>
     `,
-    choices: ['Grant Camera Access'],
+    choices: () => [t('grantCameraBtn')],
     button_html: '<button class="studio-btn" style="margin-top: 20px; min-width: 240px;">%choice%</button>',
     on_finish: async () => {
         try {
@@ -314,20 +471,20 @@ const request_camera = {
 // 2. Fullscreen Phase
 const enter_fullscreen = {
     type: jsPsychHtmlButtonResponse,
-    stimulus: `
+    stimulus: () => `
         <div class="studio-card" style="max-width: 500px; text-align: center; margin: 0 auto; padding: 32px 28px;">
             <div style="width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 12px; background: #e8f3ff; border: 1px solid #bedaff; display: flex; align-items: center; justify-content: center;">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#165dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                 </svg>
             </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #1d2129; margin-bottom: 8px;">Fullscreen Calibration & Tracking</h3>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1d2129; margin-bottom: 8px;">${t('fullscreenTitle')}</h3>
             <p style="color: #4e5969; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-                To maintain screen coordinate mapping accuracy and metric visual angle calculations, the session will operate in fullscreen mode.
+                ${t('fullscreenDesc')}
             </p>
         </div>
     `,
-    choices: ['Enter Fullscreen'],
+    choices: () => [t('fullscreenBtn')],
     button_html: '<button class="studio-btn" style="margin-top: 15px; min-width: 220px;">%choice%</button>',
     on_finish: async () => {
         const el = document.documentElement;
@@ -342,35 +499,36 @@ const enter_fullscreen = {
     }
 };
 
-// 3. Studio Setup & Preview Dashboard
-const setup_panel = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
+function renderSetupHtml() {
+    return `
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1140px; margin: 0 auto; padding: 12px 0;">
             <!-- Header Bar -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <img src="./gazefollower.png" style="width: 38px; height: 38px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);" alt="GazeFollower2">
                     <div>
-                        <h2 style="font-size: 18px; font-weight: 700; color: #1d2129; letter-spacing: -0.01em;">GazeFollower2 Control Center</h2>
-                        <p style="font-size: 12px; color: #86909c;">Hardware geometry & gaze calibration setup</p>
+                        <h2 id="header-title" style="font-size: 18px; font-weight: 700; color: #1d2129; letter-spacing: -0.01em;">${t('controlCenterTitle')}</h2>
+                        <p id="header-subtitle" style="font-size: 12px; color: #86909c;">${t('controlCenterSubtitle')}</p>
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="btn-lang-toggle" class="studio-btn studio-btn-secondary" style="padding: 4px 12px; font-size: 12px; height: 30px; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer;">
+                        🌐 <span id="btn-lang-text">${t('langBtn')}</span>
+                    </button>
                     <span id="badge-fps" class="status-pill info"><span class="pulse-dot"></span> 30 FPS Live</span>
-                    <span id="badge-status" class="status-pill info"><span class="pulse-dot"></span> Initializing...</span>
+                    <span id="badge-status" class="status-pill info"><span class="pulse-dot"></span> ${t('initializing')}</span>
                 </div>
             </div>
 
             <!-- Two-Column Workspace Layout -->
             <div style="display: grid; grid-template-columns: 440px 1fr; gap: 20px; width: 100%;">
                 
-                <!-- Left Column: Camera Viewfinder & Preprocessing -->
+                <!-- Left Column: Camera Viewfinder, Model & Preprocessing -->
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div class="studio-card" style="padding: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="font-size: 13px; font-weight: 600; color: #1d2129;">Live Viewfinder</span>
-                            <span id="badge-face-tracking" class="status-pill info" style="font-size: 11px;">Face Tracking: Detecting...</span>
+                            <span id="label-viewfinder" style="font-size: 13px; font-weight: 600; color: #1d2129;">${t('liveViewfinder')}</span>
+                            <span id="badge-face-tracking" class="status-pill info" style="font-size: 11px;">${t('faceDetecting')}</span>
                         </div>
                         <div id="video-anchor" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
                             <div id="sdk-status-wrap" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.92); z-index: 10;">
@@ -382,131 +540,129 @@ const setup_panel = {
                         <!-- Real-Time Pipeline Telemetry HUD (Mediapipe + GazeNet + FPS) -->
                         <div style="margin-top: 12px; padding: 10px 12px; background: #f7f8fa; border-radius: 6px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center;">
                             <div>
-                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">Throughput</div>
+                                <div id="label-throughput" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('throughput')}</div>
                                 <div id="metric-fps" style="font-size: 13.5px; font-weight: 700; color: #00b42a; margin-top: 2px;">-- FPS</div>
                             </div>
                             <div>
-                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">Pipeline Total</div>
+                                <div id="label-total-latency" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('pipelineTotal')}</div>
                                 <div id="metric-total-ms" style="font-size: 13.5px; font-weight: 700; color: #165dff; margin-top: 2px;">-- ms</div>
                             </div>
                             <div>
-                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">MediaPipe</div>
+                                <div id="label-mediapipe" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('mediapipe')}</div>
                                 <div id="metric-media-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
                             </div>
                             <div>
-                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">GazeNet</div>
+                                <div id="label-gazenet" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('gazeNet')}</div>
                                 <div id="metric-gaze-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Neural Model Selector Card (FP16 vs FP32) -->
+                    <!-- Neural Model Selector Card (ONNX Only: FP16 vs FP32) -->
                     <div class="studio-card" style="padding: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 13px; font-weight: 600; color: #1d2129;">Inference Model (模型选项)</span>
-                            <span id="badge-model-tag" class="status-pill info" style="font-size: 11px;">FP16 半精度 (~3.8 MB)</span>
+                            <span id="label-model-title" style="font-size: 13px; font-weight: 600; color: #1d2129;">${t('inferenceModelTitle')}</span>
+                            <span id="badge-model-tag" class="status-pill info" style="font-size: 11px;">${config.modelPath.includes('fp16') ? t('modelTagFP16') : t('modelTagFP32')}</span>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <select id="sel-model-variant" class="studio-select" style="width: 100%;">
-                                <option value="models/GazeNet_Next_fp16.onnx" selected>GazeNet_Next FP16 (3.8 MB - 半精度极速推荐)</option>
-                                <option value="models/GazeNet_Next.onnx">GazeNet_Next FP32 (7.6 MB - 原始全精度基准)</option>
-                                <option value="models/GazeNet_Next_fp16.bin">GazeNet_Next FP16 .bin (3.8 MB - 加密二进制版)</option>
-                                <option value="models/GazeNet_Next.bin">GazeNet_Next FP32 .bin (7.6 MB - 加密二进制版)</option>
+                                <option value="models/GazeNet_Next_fp16.onnx" ${config.modelPath.includes('fp16') ? 'selected' : ''}>${t('optFP16')}</option>
+                                <option value="models/GazeNet_Next.onnx" ${!config.modelPath.includes('fp16') ? 'selected' : ''}>${t('optFP32')}</option>
                             </select>
-                            <div style="font-size: 11.5px; color: #86909c; line-height: 1.4;">
-                                支持热切换模型，下方可直观对比两者的网络下载体积与 GPU 实时推理耗时。
+                            <div id="model-hint-text" style="font-size: 11.5px; color: #86909c; line-height: 1.4;">
+                                ${t('modelHint')}
                             </div>
                         </div>
                     </div>
 
                     <!-- AI Preprocessing Controls -->
                     <div class="studio-card" style="padding: 18px;">
-                        <span style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">Vision Preprocessing</span>
+                        <span id="label-vision-preproc" style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">${t('visionPreproc')}</span>
                         <div style="display: flex; flex-direction: column; gap: 12px;">
                             <div style="display: grid; grid-template-columns: 1fr 140px; gap: 10px;">
                                 <div>
-                                    <label class="studio-label">Gaze Smoothing (Heuristic Filter)</label>
+                                    <label id="label-gaze-smooth" class="studio-label">${t('gazeSmoothing')}</label>
                                     <select id="sel-gaze-filter" class="studio-select" style="width: 100%;">
-                                        <option value="true" selected>Enabled (Default)</option>
-                                        <option value="false">Disabled (Raw)</option>
+                                        <option value="true" ${config.gazeFilter !== false ? 'selected' : ''}>${t('enabledDefault')}</option>
+                                        <option value="false" ${config.gazeFilter === false ? 'selected' : ''}>${t('disabledRaw')}</option>
                                     </select>
                                 </div>
                                 <div id="look-ahead-wrap">
-                                    <label class="studio-label"><span>look_ahead</span><span style="font-size: 11px; color: #86909c;">Default: 2</span></label>
-                                    <input type="number" id="inp-look-ahead" class="studio-input" value="2" min="1" max="15" step="1" style="width: 100%;">
+                                    <label class="studio-label"><span id="label-look-ahead">${t('lookAheadLabel')}</span><span id="look-ahead-hint" style="font-size: 11px; color: #86909c;">${t('lookAheadHint')}</span></label>
+                                    <input type="number" id="inp-look-ahead" class="studio-input" value="${config.look_ahead || 2}" min="1" max="15" step="1" style="width: 100%;">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Protocol, Display Geometry, and Validation Settings -->
+                <!-- Right Column: Calibration Setup, Display Geometry, Validation Protocol & Start Button -->
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     
                     <!-- Card 1: Calibration Engine -->
                     <div class="studio-card" style="padding: 18px;">
-                        <span style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">Calibration Setup</span>
+                        <span id="label-cali-setup" style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">${t('calibrationSetup')}</span>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div>
-                                <label class="studio-label">Target Pattern</label>
+                                <label id="label-target-pattern" class="studio-label">${t('targetPattern')}</label>
                                 <select id="sel-cali-mode" class="studio-select" style="width: 100%;">
-                                    <option value="13-point" selected>13-Point Enhanced Grid (Recommended)</option>
-                                    <option value="9-point">9-Point Standard Grid</option>
-                                    <option value="5-point">5-Point Fast Grid</option>
-                                    <option value="random">13-Point Random Distribution</option>
-                                    <option value="lissajous">Lissajous Continuous Pursuit</option>
+                                    <option value="13-point" ${config.caliMode === '13-point' ? 'selected' : ''}>${t('opt13Pt')}</option>
+                                    <option value="9-point" ${config.caliMode === '9-point' ? 'selected' : ''}>${t('opt9Pt')}</option>
+                                    <option value="5-point" ${config.caliMode === '5-point' ? 'selected' : ''}>${t('opt5Pt')}</option>
+                                    <option value="random" ${config.caliMode === 'random' ? 'selected' : ''}>${t('optRandom')}</option>
+                                    <option value="lissajous" ${config.caliMode === 'lissajous' ? 'selected' : ''}>${t('optLissajous')}</option>
                                 </select>
                             </div>
                             <div id="cali-order-wrap">
-                                <label class="studio-label">Target Order</label>
+                                <label id="label-target-order" class="studio-label">${t('targetOrder')}</label>
                                 <select id="sel-cali-order" class="studio-select" style="width: 100%;">
-                                    <option value="random" selected>Randomized (Prevents anticipation - Default)</option>
-                                    <option value="sequential">Sequential Order</option>
+                                    <option value="random" ${config.caliOrder === 'random' ? 'selected' : ''}>${t('optRandomOrder')}</option>
+                                    <option value="sequential" ${config.caliOrder === 'sequential' ? 'selected' : ''}>${t('optSequentialOrder')}</option>
                                 </select>
                             </div>
                             <div id="lissajous-speed-wrap" style="display: none;">
                                 <label class="studio-label">
-                                    <span>Pursuit Speed (追随速度)</span>
+                                    <span id="label-pursuit-speed">${t('pursuitSpeed')}</span>
                                     <span id="lissajous-dur-hint" style="font-size: 11px; color: #86909c;">~25s</span>
                                 </label>
                                 <div style="display: flex; gap: 6px; align-items: center;">
                                     <input type="number" id="inp-lissajous-speed" class="studio-input" value="250" step="25" min="50" max="800" style="flex: 1;">
-                                    <select id="sel-lissajous-preset" class="studio-select" style="width: 105px; padding: 7px 6px; font-size: 12px;">
-                                        <option value="custom">Preset...</option>
-                                        <option value="150">150 px/s (慢速)</option>
-                                        <option value="200">200 px/s (平缓)</option>
-                                        <option value="250" selected>250 px/s (推荐)</option>
-                                        <option value="350">350 px/s (适中)</option>
-                                        <option value="500">500 px/s (快速)</option>
+                                    <select id="sel-lissajous-preset" class="studio-select" style="width: 115px; padding: 7px 6px; font-size: 12px;">
+                                        <option value="custom">${t('presetLabel')}</option>
+                                        <option value="150">${t('speedSlow')}</option>
+                                        <option value="200">${t('speedGentle')}</option>
+                                        <option value="250" selected>${t('speedRec')}</option>
+                                        <option value="350">${t('speedMod')}</option>
+                                        <option value="500">${t('speedFast')}</option>
                                     </select>
                                 </div>
                             </div>
                             <div>
-                                <label class="studio-label">Interaction Mode</label>
+                                <label id="label-interaction-mode" class="studio-label">${t('interactionMode')}</label>
                                 <select id="sel-cali-method" class="studio-select" style="width: 100%;">
-                                    <option value="click" selected>Manual Click (Tactile Confirmation)</option>
-                                    <option value="auto">Auto Dwell (1.5s Fixation)</option>
+                                    <option value="click" ${config.caliMethod === 'click' ? 'selected' : ''}>${t('optManualClick')}</option>
+                                    <option value="auto" ${config.caliMethod === 'auto' ? 'selected' : ''}>${t('optAutoDwell')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="studio-label">Calibration Algorithm</label>
+                                <label id="label-cali-algo" class="studio-label">${t('caliAlgorithm')}</label>
                                 <select id="sel-cali-algo" class="studio-select" style="width: 100%;">
-                                    <option value="ridge" selected>Multivariate Ridge (Analytical - Default)</option>
-                                    <option value="svr">SVR (Support Vector Regression)</option>
+                                    <option value="ridge" ${config.caliAlgorithm === 'ridge' ? 'selected' : ''}>${t('optRidge')}</option>
+                                    <option value="svr" ${config.caliAlgorithm === 'svr' ? 'selected' : ''}>${t('optSVR')}</option>
                                 </select>
                             </div>
                             <div id="alpha-wrap">
                                 <label class="studio-label">
-                                    <span>Ridge Regularization (α)</span>
-                                    <span style="font-size: 11px; color: #86909c;">Default: 1.0</span>
+                                    <span id="label-ridge-alpha">${t('ridgeAlpha')}</span>
+                                    <span id="alpha-hint" style="font-size: 11px; color: #86909c;">${t('alphaDefault')}</span>
                                 </label>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <input type="number" id="inp-cali-alpha" class="studio-input" value="1.0" step="0.1" min="0.0001" max="1000" style="flex: 1;">
-                                    <select id="sel-alpha-preset" class="studio-select" style="width: 105px; padding: 7px 6px; font-size: 12px;">
-                                        <option value="custom">Preset...</option>
-                                        <option value="1.0" selected>1.0 (13-pt)</option>
-                                        <option value="2.0">2.0 (9-pt)</option>
-                                        <option value="3.0">3.0 (5-pt)</option>
+                                    <input type="number" id="inp-cali-alpha" class="studio-input" value="${config.caliAlpha || '1.0'}" step="0.1" min="0.0001" max="1000" style="flex: 1;">
+                                    <select id="sel-alpha-preset" class="studio-select" style="width: 130px; padding: 7px 6px; font-size: 12px;">
+                                        <option value="custom">${t('presetLabel')}</option>
+                                        <option value="1.0" ${config.caliAlpha === 1.0 ? 'selected' : ''}>${t('alpha13pt')}</option>
+                                        <option value="2.0" ${config.caliAlpha === 2.0 ? 'selected' : ''}>${t('alpha9pt')}</option>
+                                        <option value="3.0" ${config.caliAlpha === 3.0 ? 'selected' : ''}>${t('alpha5pt')}</option>
                                         <option value="0.1">0.1</option>
                                         <option value="5.0">5.0</option>
                                         <option value="10.0">10.0</option>
@@ -514,13 +670,13 @@ const setup_panel = {
                                 </div>
                             </div>
                             <div>
-                                <label class="studio-label">Hardware Latency Compensation</label>
+                                <label id="label-latency-comp" class="studio-label">${t('latencyComp')}</label>
                                 <select id="sel-cali-latency" class="studio-select" style="width: 100%;">
-                                    <option value="0">0 frames (0 ms)</option>
-                                    <option value="2">2 frames (~66 ms)</option>
-                                    <option value="4" selected>4 frames (~133 ms - Default)</option>
-                                    <option value="6">6 frames (~200 ms)</option>
-                                    <option value="8">8 frames (~266 ms)</option>
+                                    <option value="0" ${config.caliLatency === 0 ? 'selected' : ''}>0 ${t('latencyFrames', { ms: '0', def: '' })}</option>
+                                    <option value="2" ${config.caliLatency === 2 ? 'selected' : ''}>2 ${t('latencyFrames', { ms: '66', def: '' })}</option>
+                                    <option value="4" ${config.caliLatency === 4 ? 'selected' : ''}>4 ${t('latencyFrames', { ms: '133', def: ' - Default' })}</option>
+                                    <option value="6" ${config.caliLatency === 6 ? 'selected' : ''}>6 ${t('latencyFrames', { ms: '200', def: '' })}</option>
+                                    <option value="8" ${config.caliLatency === 8 ? 'selected' : ''}>8 ${t('latencyFrames', { ms: '266', def: '' })}</option>
                                 </select>
                             </div>
                         </div>
@@ -529,7 +685,7 @@ const setup_panel = {
                     <!-- Card 2: Physical Display & Viewing Geometry -->
                     <div class="studio-card" style="padding: 18px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-size: 13px; font-weight: 600; color: #1d2129;">Display & Viewing Geometry (屏幕宽高与视距)</span>
+                            <span id="label-display-geo" style="font-size: 13px; font-weight: 600; color: #1d2129;">${t('displayGeometry')}</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <select id="sel-screen-preset" class="studio-select" style="padding: 2px 8px; font-size: 11px; height: 24px;">
                                     <option value="28.6x17.9">13.3" (28.6×17.9 cm)</option>
@@ -538,7 +694,7 @@ const setup_panel = {
                                     <option value="53.1x29.9">24.0" (53.1×29.9 cm)</option>
                                     <option value="59.8x33.6">27.0" (59.8×33.6 cm)</option>
                                     <option value="70.8x39.8">32.0" (70.8×39.8 cm)</option>
-                                    <option value="custom">Custom Size...</option>
+                                    <option value="custom">${t('presetCustom')}</option>
                                 </select>
                                 <span id="geo-preview" class="status-pill info" style="font-size: 11px;">~141.4 PPI • 0.18×0.18 mm/px</span>
                             </div>
@@ -546,55 +702,55 @@ const setup_panel = {
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 10px;">
                             <div>
                                 <label class="studio-label">
-                                    <span>Screen Width (宽)</span>
+                                    <span id="label-screen-width">${t('screenWidth')}</span>
                                 </label>
                                 <div style="position: relative;">
-                                    <input type="number" id="inp-screen-width" class="studio-input" value="34.5" step="0.1" min="5" max="300" required style="width: 100%; padding-right: 34px;">
+                                    <input type="number" id="inp-screen-width" class="studio-input" value="${config.screenWidthCm}" step="0.1" min="5" max="300" required style="width: 100%; padding-right: 34px;">
                                     <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #86909c;">cm</span>
                                 </div>
                             </div>
                             <div>
                                 <label class="studio-label">
-                                    <span>Screen Height (高)</span>
+                                    <span id="label-screen-height">${t('screenHeight')}</span>
                                 </label>
                                 <div style="position: relative;">
-                                    <input type="number" id="inp-screen-height" class="studio-input" value="19.4" step="0.1" min="5" max="300" required style="width: 100%; padding-right: 34px;">
+                                    <input type="number" id="inp-screen-height" class="studio-input" value="${config.screenHeightCm}" step="0.1" min="5" max="300" required style="width: 100%; padding-right: 34px;">
                                     <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #86909c;">cm</span>
                                 </div>
                             </div>
                             <div>
                                 <label class="studio-label">
-                                    <span>Eye Distance (距离)</span>
+                                    <span id="label-eye-distance">${t('eyeDistance')}</span>
                                 </label>
                                 <div style="position: relative;">
-                                    <input type="number" id="inp-eye-distance" class="studio-input" value="60.0" step="1" min="15" max="300" required style="width: 100%; padding-right: 34px;">
+                                    <input type="number" id="inp-eye-distance" class="studio-input" value="${config.eyeDistanceCm}" step="1" min="15" max="300" required style="width: 100%; padding-right: 34px;">
                                     <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #86909c;">cm</span>
                                 </div>
                             </div>
                         </div>
-                        <p style="font-size: 12px; color: #86909c; line-height: 1.5;">
-                            Please enter physical screen width (cm), height (cm), and viewing distance (cm) for D3 visual angle (θ°) and physical accuracy/precision evaluation.
+                        <p id="geo-hint-text" style="font-size: 12px; color: #86909c; line-height: 1.5;">
+                            ${t('geoHint')}
                         </p>
                     </div>
 
                     <!-- Card 3: Validation Protocol -->
                     <div class="studio-card" style="padding: 18px;">
-                        <span style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">Validation Protocol</span>
+                        <span id="label-val-protocol" style="font-size: 13px; font-weight: 600; color: #1d2129; display: block; margin-bottom: 12px;">${t('validationProtocol')}</span>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <div>
-                                <label class="studio-label">Run Accuracy Validation</label>
+                                <label id="label-run-val" class="studio-label">${t('runValidation')}</label>
                                 <select id="sel-do-val" class="studio-select" style="width: 100%;">
-                                    <option value="true" selected>Yes (D3 Accuracy & Precision Evaluation)</option>
-                                    <option value="false">No (Skip directly to tracking)</option>
+                                    <option value="true" ${config.doValidation ? 'selected' : ''}>${t('optValYes')}</option>
+                                    <option value="false" ${!config.doValidation ? 'selected' : ''}>${t('optValNo')}</option>
                                 </select>
                             </div>
                             <div id="val-opts">
-                                <label class="studio-label">Validation Pattern</label>
+                                <label id="label-val-pattern" class="studio-label">${t('valPattern')}</label>
                                 <div style="display: flex; gap: 8px;">
                                     <select id="sel-val-mode" class="studio-select" style="flex: 1;">
-                                        <option value="random" selected>Random (13 Points - Default)</option>
-                                        <option value="9-point">9-Point Standard</option>
-                                        <option value="5-point">5-Point Fast</option>
+                                        <option value="random" ${config.valMode === 'random' ? 'selected' : ''}>${t('optValRandom')}</option>
+                                        <option value="9-point" ${config.valMode === '9-point' ? 'selected' : ''}>${t('optVal9Pt')}</option>
+                                        <option value="5-point" ${config.valMode === '5-point' ? 'selected' : ''}>${t('optVal5Pt')}</option>
                                     </select>
                                     <input type="number" id="inp-val-rand" class="studio-input" value="13" min="1" max="50" style="width: 65px; display: none;">
                                 </div>
@@ -602,12 +758,149 @@ const setup_panel = {
                         </div>
                     </div>
 
+                    <!-- Start Calibration Action Area (Right under Validation Protocol) -->
+                    <div style="margin-top: 4px; width: 100%;">
+                        <button class="studio-btn" id="btn-next" style="width: 100%; padding: 13px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 14px rgba(22, 93, 255, 0.25);" disabled>
+                            ${t('startCalibrationBtn')}
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
-    `,
-    choices: ['Start Calibration'],
-    button_html: '<button class="studio-btn" id="btn-next" style="margin-top: 20px; min-width: 260px;" disabled>%choice%</button>',
+    `;
+}
+
+function updateLanguageDOM(lang) {
+    const el = (id) => document.getElementById(id);
+    
+    if (el('header-title')) el('header-title').innerText = t('controlCenterTitle');
+    if (el('header-subtitle')) el('header-subtitle').innerText = t('controlCenterSubtitle');
+    if (el('btn-lang-text')) el('btn-lang-text').innerText = t('langBtn');
+    if (el('label-viewfinder')) el('label-viewfinder').innerText = t('liveViewfinder');
+    if (el('label-throughput')) el('label-throughput').innerText = t('throughput');
+    if (el('label-total-latency')) el('label-total-latency').innerText = t('pipelineTotal');
+    if (el('label-mediapipe')) el('label-mediapipe').innerText = t('mediapipe');
+    if (el('label-gazenet')) el('label-gazenet').innerText = t('gazeNet');
+
+    if (el('label-model-title')) el('label-model-title').innerText = t('inferenceModelTitle');
+    if (el('badge-model-tag')) el('badge-model-tag').innerText = config.modelPath.includes('fp16') ? t('modelTagFP16') : t('modelTagFP32');
+    if (el('model-hint-text')) el('model-hint-text').innerText = t('modelHint');
+
+    const selModel = el('sel-model-variant');
+    if (selModel && selModel.options.length >= 2) {
+        selModel.options[0].text = t('optFP16');
+        selModel.options[1].text = t('optFP32');
+    }
+
+    if (el('label-vision-preproc')) el('label-vision-preproc').innerText = t('visionPreproc');
+    if (el('label-gaze-smooth')) el('label-gaze-smooth').innerText = t('gazeSmoothing');
+    const selFilter = el('sel-gaze-filter');
+    if (selFilter && selFilter.options.length >= 2) {
+        selFilter.options[0].text = t('enabledDefault');
+        selFilter.options[1].text = t('disabledRaw');
+    }
+    if (el('label-look-ahead')) el('label-look-ahead').innerText = t('lookAheadLabel');
+    if (el('look-ahead-hint')) el('look-ahead-hint').innerText = t('lookAheadHint');
+
+    if (el('label-cali-setup')) el('label-cali-setup').innerText = t('calibrationSetup');
+    if (el('label-target-pattern')) el('label-target-pattern').innerText = t('targetPattern');
+    const selCaliMode = el('sel-cali-mode');
+    if (selCaliMode && selCaliMode.options.length >= 5) {
+        selCaliMode.options[0].text = t('opt13Pt');
+        selCaliMode.options[1].text = t('opt9Pt');
+        selCaliMode.options[2].text = t('opt5Pt');
+        selCaliMode.options[3].text = t('optRandom');
+        selCaliMode.options[4].text = t('optLissajous');
+    }
+
+    if (el('label-target-order')) el('label-target-order').innerText = t('targetOrder');
+    const selCaliOrder = el('sel-cali-order');
+    if (selCaliOrder && selCaliOrder.options.length >= 2) {
+        selCaliOrder.options[0].text = t('optRandomOrder');
+        selCaliOrder.options[1].text = t('optSequentialOrder');
+    }
+
+    if (el('label-pursuit-speed')) el('label-pursuit-speed').innerText = t('pursuitSpeed');
+    const selLissPreset = el('sel-lissajous-preset');
+    if (selLissPreset && selLissPreset.options.length >= 6) {
+        selLissPreset.options[0].text = t('presetLabel');
+        selLissPreset.options[1].text = t('speedSlow');
+        selLissPreset.options[2].text = t('speedGentle');
+        selLissPreset.options[3].text = t('speedRec');
+        selLissPreset.options[4].text = t('speedMod');
+        selLissPreset.options[5].text = t('speedFast');
+    }
+
+    if (el('label-interaction-mode')) el('label-interaction-mode').innerText = t('interactionMode');
+    const selMethod = el('sel-cali-method');
+    if (selMethod && selMethod.options.length >= 2) {
+        selMethod.options[0].text = t('optManualClick');
+        selMethod.options[1].text = t('optAutoDwell');
+    }
+
+    if (el('label-cali-algo')) el('label-cali-algo').innerText = t('caliAlgorithm');
+    const selAlgo = el('sel-cali-algo');
+    if (selAlgo && selAlgo.options.length >= 2) {
+        selAlgo.options[0].text = t('optRidge');
+        selAlgo.options[1].text = t('optSVR');
+    }
+
+    if (el('label-ridge-alpha')) el('label-ridge-alpha').innerText = t('ridgeAlpha');
+    if (el('alpha-hint')) el('alpha-hint').innerText = t('alphaDefault');
+    const selAlphaPreset = el('sel-alpha-preset');
+    if (selAlphaPreset && selAlphaPreset.options.length >= 4) {
+        selAlphaPreset.options[0].text = t('presetLabel');
+        selAlphaPreset.options[1].text = t('alpha13pt');
+        selAlphaPreset.options[2].text = t('alpha9pt');
+        selAlphaPreset.options[3].text = t('alpha5pt');
+    }
+
+    if (el('label-latency-comp')) el('label-latency-comp').innerText = t('latencyComp');
+    const selLatency = el('sel-cali-latency');
+    if (selLatency && selLatency.options.length >= 5) {
+        selLatency.options[0].text = `0 ${t('latencyFrames', { ms: '0', def: '' })}`;
+        selLatency.options[1].text = `2 ${t('latencyFrames', { ms: '66', def: '' })}`;
+        selLatency.options[2].text = `4 ${t('latencyFrames', { ms: '133', def: ' - Default' })}`;
+        selLatency.options[3].text = `6 ${t('latencyFrames', { ms: '200', def: '' })}`;
+        selLatency.options[4].text = `8 ${t('latencyFrames', { ms: '266', def: '' })}`;
+    }
+
+    if (el('label-display-geo')) el('label-display-geo').innerText = t('displayGeometry');
+    const selScreen = el('sel-screen-preset');
+    if (selScreen && selScreen.options.length >= 7) {
+        selScreen.options[6].text = t('presetCustom');
+    }
+    if (el('label-screen-width')) el('label-screen-width').innerText = t('screenWidth');
+    if (el('label-screen-height')) el('label-screen-height').innerText = t('screenHeight');
+    if (el('label-eye-distance')) el('label-eye-distance').innerText = t('eyeDistance');
+    if (el('geo-hint-text')) el('geo-hint-text').innerText = t('geoHint');
+
+    if (el('label-val-protocol')) el('label-val-protocol').innerText = t('validationProtocol');
+    if (el('label-run-val')) el('label-run-val').innerText = t('runValidation');
+    const selDoVal = el('sel-do-val');
+    if (selDoVal && selDoVal.options.length >= 2) {
+        selDoVal.options[0].text = t('optValYes');
+        selDoVal.options[1].text = t('optValNo');
+    }
+
+    if (el('label-val-pattern')) el('label-val-pattern').innerText = t('valPattern');
+    const selValMode = el('sel-val-mode');
+    if (selValMode && selValMode.options.length >= 3) {
+        selValMode.options[0].text = t('optValRandom');
+        selValMode.options[1].text = t('optVal9Pt');
+        selValMode.options[2].text = t('optVal5Pt');
+    }
+
+    if (el('btn-next')) el('btn-next').innerText = t('startCalibrationBtn');
+}
+
+// 3. Studio Setup & Preview Dashboard
+const setup_panel = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: () => renderSetupHtml(),
+    choices: [],
+    button_html: '',
     on_load: async () => {
         const btnNext = document.getElementById('btn-next');
         const status = document.getElementById('sdk-status');
@@ -615,6 +908,16 @@ const setup_panel = {
         const badgeStatus = document.getElementById('badge-status');
         const geoPreview = document.getElementById('geo-preview');
         let sdkReady = false;
+
+        // Language toggle
+        const btnLangToggle = document.getElementById('btn-lang-toggle');
+        if (btnLangToggle) {
+            btnLangToggle.onclick = () => {
+                currentLang = currentLang === 'zh' ? 'en' : 'zh';
+                localStorage.setItem('gf2_lang', currentLang);
+                updateLanguageDOM(currentLang);
+            };
+        }
 
         const inpScreenWidth = document.getElementById('inp-screen-width');
         const inpScreenHeight = document.getElementById('inp-screen-height');
@@ -634,6 +937,14 @@ const setup_panel = {
             }
         };
 
+        if (btnNext) {
+            btnNext.onclick = () => {
+                if (sdkReady && isGeometryValid()) {
+                    jsPsych.finishTrial({ button_pressed: 0 });
+                }
+            };
+        }
+
         // Geometry update helper
         const updateGeometryBadge = () => {
             const geo = getScreenGeometry(config.screenWidthCm, config.screenHeightCm, config.eyeDistanceCm);
@@ -648,73 +959,62 @@ const setup_panel = {
             selScreenPreset.onchange = (e) => {
                 if (e.target.value !== 'custom') {
                     const parts = e.target.value.split('x');
-                    if (parts.length === 2) {
-                        const wCm = parseFloat(parts[0]);
-                        const hCm = parseFloat(parts[1]);
-                        if (wCm > 0 && hCm > 0) {
-                            inpScreenWidth.value = wCm.toFixed(1);
-                            inpScreenHeight.value = hCm.toFixed(1);
-                            config.screenWidthCm = wCm;
-                            config.screenHeightCm = hCm;
-                            updateGeometryBadge();
-                        }
-                    }
+                    config.screenWidthCm = parseFloat(parts[0]);
+                    config.screenHeightCm = parseFloat(parts[1]);
+                    inpScreenWidth.value = config.screenWidthCm.toFixed(1);
+                    inpScreenHeight.value = config.screenHeightCm.toFixed(1);
+                    updateGeometryBadge();
                 }
             };
+        }
 
-            const syncCustomSize = () => {
-                const wVal = parseFloat(inpScreenWidth.value);
-                const hVal = parseFloat(inpScreenHeight.value);
-                if (!isNaN(wVal) && wVal > 0) config.screenWidthCm = wVal;
-                if (!isNaN(hVal) && hVal > 0) config.screenHeightCm = hVal;
-                const key = `${wVal.toFixed(1)}x${hVal.toFixed(1)}`;
-                const match = Array.from(selScreenPreset.options).some(opt => opt.value === key);
-                selScreenPreset.value = match ? key : 'custom';
-                updateGeometryBadge();
+        if (inpScreenWidth) {
+            inpScreenWidth.oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                if (Number.isFinite(val) && val > 0) {
+                    config.screenWidthCm = val;
+                    if (selScreenPreset) selScreenPreset.value = 'custom';
+                    updateGeometryBadge();
+                }
             };
+        }
 
-            inpScreenWidth.oninput = syncCustomSize;
-            inpScreenHeight.oninput = syncCustomSize;
+        if (inpScreenHeight) {
+            inpScreenHeight.oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                if (Number.isFinite(val) && val > 0) {
+                    config.screenHeightCm = val;
+                    if (selScreenPreset) selScreenPreset.value = 'custom';
+                    updateGeometryBadge();
+                }
+            };
         }
 
         if (inpEyeDistance) {
             inpEyeDistance.oninput = (e) => {
                 const val = parseFloat(e.target.value);
-                if (!isNaN(val) && val > 0) {
+                if (Number.isFinite(val) && val > 0) {
                     config.eyeDistanceCm = val;
+                    updateGeometryBadge();
                 }
-                updateGeometryBadge();
             };
         }
+
         updateGeometryBadge();
 
-        // Calibration options
-        const methodSel = document.getElementById('sel-cali-method');
+        // Target pattern selection
         const caliModeSel = document.getElementById('sel-cali-mode');
-        const caliOrderSel = document.getElementById('sel-cali-order');
         const caliOrderWrap = document.getElementById('cali-order-wrap');
-        const lissajousSpeedWrap = document.getElementById('lissajous-speed-wrap');
+        const lissajousWrap = document.getElementById('lissajous-speed-wrap');
         const inpLissajousSpeed = document.getElementById('inp-lissajous-speed');
         const selLissajousPreset = document.getElementById('sel-lissajous-preset');
-        const lissajousDurHint = document.getElementById('lissajous-dur-hint');
+        const lissDurHint = document.getElementById('lissajous-dur-hint');
 
-        const updateLissajousSpeedUI = () => {
-            const isLissajous = config.caliMode === 'lissajous';
-            if (caliOrderWrap) caliOrderWrap.style.display = isLissajous ? 'none' : 'block';
-            if (lissajousSpeedWrap) lissajousSpeedWrap.style.display = isLissajous ? 'block' : 'none';
-            if (methodSel) {
-                if (isLissajous) {
-                    methodSel.value = 'auto';
-                    methodSel.disabled = true;
-                    config.caliMethod = 'auto';
-                } else {
-                    methodSel.disabled = false;
-                }
-            }
-            if (window.GazeFollower2 && GazeFollower2.caliManager) {
+        const updateLissajousHint = (speed) => {
+            if (lissDurHint && window.GazeFollower2 && GazeFollower2.caliManager) {
                 const len = GazeFollower2.caliManager.computeLissajousLength();
-                const durS = Math.round(len / (config.lissajousSpeed || 250));
-                if (lissajousDurHint) lissajousDurHint.innerText = `~${durS}s 全程`;
+                const durSec = Math.round(len / Math.max(speed, 50));
+                lissDurHint.innerText = `~${durSec}s`;
                 if (typeof GazeFollower2.setLissajousSpeed === 'function') {
                     GazeFollower2.setLissajousSpeed(config.lissajousSpeed);
                 }
@@ -724,35 +1024,20 @@ const setup_panel = {
         if (caliModeSel) {
             caliModeSel.onchange = (e) => {
                 config.caliMode = e.target.value;
-                // Auto adapt default lambda based on calibration points (5-pt: 3.0, 9-pt: 2.0, 13-pt: 1.0)
-                if (config.caliMode === '5-point') {
-                    config.caliAlpha = 3.0;
-                } else if (config.caliMode === '9-point') {
-                    config.caliAlpha = 2.0;
-                } else if (config.caliMode === '13-point' || config.caliMode === 'random' || config.caliMode === 'lissajous') {
-                    config.caliAlpha = 1.0;
-                }
-                if (inpAlpha) inpAlpha.value = String(config.caliAlpha);
-                if (selAlphaPreset) {
-                    const match = Array.from(selAlphaPreset.options).some(opt => opt.value === String(config.caliAlpha));
-                    selAlphaPreset.value = match ? String(config.caliAlpha) : 'custom';
-                }
-                syncAlphaUI();
-                updateLissajousSpeedUI();
+                const isLiss = (config.caliMode === 'lissajous');
+                if (caliOrderWrap) caliOrderWrap.style.display = isLiss ? 'none' : 'block';
+                if (lissajousWrap) lissajousWrap.style.display = isLiss ? 'block' : 'none';
+                if (isLiss) updateLissajousHint(config.lissajousSpeed);
             };
         }
 
         if (inpLissajousSpeed) {
-            inpLissajousSpeed.value = String(config.lissajousSpeed ?? 250);
             inpLissajousSpeed.oninput = (e) => {
-                const val = parseFloat(e.target.value);
-                if (Number.isFinite(val) && val > 0) {
-                    config.lissajousSpeed = val;
-                    if (selLissajousPreset) {
-                        const match = Array.from(selLissajousPreset.options).some(opt => opt.value === String(val));
-                        selLissajousPreset.value = match ? String(val) : 'custom';
-                    }
-                    updateLissajousSpeedUI();
+                const spd = parseInt(e.target.value, 10);
+                if (!Number.isNaN(spd) && spd >= 50) {
+                    config.lissajousSpeed = spd;
+                    if (selLissajousPreset) selLissajousPreset.value = 'custom';
+                    updateLissajousHint(spd);
                 }
             };
         }
@@ -760,66 +1045,57 @@ const setup_panel = {
         if (selLissajousPreset && inpLissajousSpeed) {
             selLissajousPreset.onchange = (e) => {
                 if (e.target.value !== 'custom') {
-                    const val = parseFloat(e.target.value);
-                    if (Number.isFinite(val) && val > 0) {
-                        inpLissajousSpeed.value = String(val);
-                        config.lissajousSpeed = val;
-                        updateLissajousSpeedUI();
-                    }
+                    const spd = parseInt(e.target.value, 10);
+                    config.lissajousSpeed = spd;
+                    inpLissajousSpeed.value = spd;
+                    updateLissajousHint(spd);
                 }
             };
         }
-        updateLissajousSpeedUI();
 
+        const caliOrderSel = document.getElementById('sel-cali-order');
         if (caliOrderSel) {
-            caliOrderSel.onchange = (e) => config.caliOrder = e.target.value;
+            caliOrderSel.onchange = (e) => {
+                config.caliOrder = e.target.value;
+            };
         }
 
-        if (methodSel) {
-            methodSel.onchange = (e) => config.caliMethod = e.target.value;
+        const caliMethodSel = document.getElementById('sel-cali-method');
+        if (caliMethodSel) {
+            caliMethodSel.onchange = (e) => {
+                config.caliMethod = e.target.value;
+            };
         }
 
-        const algoSel = document.getElementById('sel-cali-algo');
+        const caliAlgoSel = document.getElementById('sel-cali-algo');
+        const alphaWrap = document.getElementById('alpha-wrap');
         const inpAlpha = document.getElementById('inp-cali-alpha');
         const selAlphaPreset = document.getElementById('sel-alpha-preset');
-        const alphaWrap = document.getElementById('alpha-wrap');
 
-        const syncAlphaUI = () => {
-            const isRidge = config.caliAlgorithm === 'ridge';
-            if (alphaWrap) {
-                alphaWrap.style.opacity = isRidge ? '1' : '0.4';
-                alphaWrap.style.pointerEvents = isRidge ? 'auto' : 'none';
-            }
-            if (window.GazeFollower2) {
-                if (typeof GazeFollower2.setRegression === 'function') {
-                    GazeFollower2.setRegression(config.caliAlgorithm, config.caliAlpha);
-                }
-                if (typeof GazeFollower2.setRidgeAlpha === 'function') {
-                    GazeFollower2.setRidgeAlpha(config.caliAlpha);
-                }
-            }
-        };
-
-        if (algoSel) {
-            algoSel.value = config.caliAlgorithm;
-            algoSel.onchange = (e) => {
+        if (caliAlgoSel) {
+            caliAlgoSel.onchange = (e) => {
                 config.caliAlgorithm = e.target.value;
-                syncAlphaUI();
+                if (alphaWrap) alphaWrap.style.display = (config.caliAlgorithm === 'ridge') ? 'block' : 'none';
+                if (window.GazeFollower2) {
+                    if (typeof GazeFollower2.setRegression === 'function') {
+                        GazeFollower2.setRegression(config.caliAlgorithm, config.caliAlpha);
+                    }
+                    if (typeof GazeFollower2.setRidgeAlpha === 'function') {
+                        GazeFollower2.setRidgeAlpha(config.caliAlpha);
+                    }
+                }
             };
         }
 
         if (inpAlpha) {
-            inpAlpha.value = String(config.caliAlpha ?? 1.0);
             inpAlpha.oninput = (e) => {
-                const val = parseFloat(e.target.value);
-                if (Number.isFinite(val) && val > 0) {
-                    config.caliAlpha = val;
-                    if (selAlphaPreset) {
-                        const str = val.toFixed(1);
-                        const match = Array.from(selAlphaPreset.options).some(opt => opt.value === String(val) || opt.value === str);
-                        selAlphaPreset.value = match ? (Array.from(selAlphaPreset.options).find(opt => opt.value === String(val) || opt.value === str).value) : 'custom';
+                const a = parseFloat(e.target.value);
+                if (Number.isFinite(a) && a > 0) {
+                    config.caliAlpha = a;
+                    if (selAlphaPreset) selAlphaPreset.value = 'custom';
+                    if (window.GazeFollower2 && typeof GazeFollower2.setRidgeAlpha === 'function') {
+                        GazeFollower2.setRidgeAlpha(a);
                     }
-                    syncAlphaUI();
                 }
             };
         }
@@ -827,41 +1103,48 @@ const setup_panel = {
         if (selAlphaPreset && inpAlpha) {
             selAlphaPreset.onchange = (e) => {
                 if (e.target.value !== 'custom') {
-                    const val = parseFloat(e.target.value);
-                    if (Number.isFinite(val) && val > 0) {
-                        inpAlpha.value = String(val);
-                        config.caliAlpha = val;
-                        syncAlphaUI();
+                    const a = parseFloat(e.target.value);
+                    config.caliAlpha = a;
+                    inpAlpha.value = a;
+                    if (window.GazeFollower2 && typeof GazeFollower2.setRidgeAlpha === 'function') {
+                        GazeFollower2.setRidgeAlpha(a);
                     }
                 }
             };
         }
-        syncAlphaUI();
 
-        const latencySel = document.getElementById('sel-cali-latency');
-        if (latencySel) {
-            latencySel.onchange = (e) => config.caliLatency = parseInt(e.target.value) || 0;
-        }
-
-        // Validation options
-        const valSel = document.getElementById('sel-val-mode');
-        const valInp = document.getElementById('inp-val-rand');
-        const valOpts = document.getElementById('val-opts');
-        const doValSel = document.getElementById('sel-do-val');
-
-        if (valSel && valInp) {
-            valSel.onchange = (e) => {
-                config.valMode = e.target.value;
-                valInp.style.display = (e.target.value === 'random') ? 'block' : 'none';
+        const caliLatencySel = document.getElementById('sel-cali-latency');
+        if (caliLatencySel) {
+            caliLatencySel.onchange = (e) => {
+                config.caliLatency = parseInt(e.target.value, 10);
             };
-            valInp.oninput = (e) => config.valRandomCount = parseInt(e.target.value) || 13;
         }
 
-        if (doValSel && valOpts) {
+        // Validation settings
+        const doValSel = document.getElementById('sel-do-val');
+        const valOpts = document.getElementById('val-opts');
+        const valModeSel = document.getElementById('sel-val-mode');
+        const valRandInp = document.getElementById('inp-val-rand');
+
+        if (doValSel) {
             doValSel.onchange = (e) => {
                 config.doValidation = (e.target.value === 'true');
-                valOpts.style.opacity = config.doValidation ? '1' : '0.4';
-                valOpts.style.pointerEvents = config.doValidation ? 'auto' : 'none';
+                if (valOpts) valOpts.style.display = config.doValidation ? 'block' : 'none';
+            };
+        }
+
+        if (valModeSel) {
+            valModeSel.onchange = (e) => {
+                config.valMode = e.target.value;
+                if (valRandInp) {
+                    valRandInp.style.display = (config.valMode === 'random') ? 'block' : 'none';
+                }
+            };
+        }
+
+        if (valRandInp) {
+            valRandInp.oninput = (e) => {
+                config.valRandomCount = parseInt(e.target.value, 10) || 13;
             };
         }
 
@@ -899,7 +1182,7 @@ const setup_panel = {
             };
         }
 
-        // Neural Model Variant Switcher (FP16 vs FP32)
+        // Neural Model Variant Switcher (ONNX Only: FP16 vs FP32)
         const selModelVariant = document.getElementById('sel-model-variant');
         const badgeModelTag = document.getElementById('badge-model-tag');
         if (selModelVariant) {
@@ -908,7 +1191,7 @@ const setup_panel = {
                 const targetModel = e.target.value;
                 config.modelPath = targetModel;
                 if (badgeModelTag) {
-                    badgeModelTag.innerText = targetModel.includes('fp16') ? 'FP16 半精度 (~3.8 MB)' : 'FP32 全精度 (~7.6 MB)';
+                    badgeModelTag.innerText = targetModel.includes('fp16') ? t('modelTagFP16') : t('modelTagFP32');
                 }
                 if (statusWrap) {
                     statusWrap.style.display = 'flex';
@@ -950,10 +1233,10 @@ const setup_panel = {
 
                 if (badgeFace) {
                     if (stats.isFaceDetected) {
-                        badgeFace.innerHTML = '<span class="pulse-dot"></span> Face Detected';
+                        badgeFace.innerHTML = `<span class="pulse-dot"></span> ${t('faceDetected')}`;
                         badgeFace.className = 'status-pill';
                     } else {
-                        badgeFace.innerHTML = '<span class="pulse-dot"></span> Searching Face...';
+                        badgeFace.innerHTML = `<span class="pulse-dot"></span> ${t('searchingFace')}`;
                         badgeFace.className = 'status-pill warning';
                     }
                 }
@@ -979,7 +1262,7 @@ const setup_panel = {
             const anchor = document.getElementById('video-anchor');
             if (statusWrap) statusWrap.style.display = 'none';
             if (badgeStatus) {
-                badgeStatus.innerHTML = '<span class="pulse-dot"></span> Ready';
+                badgeStatus.innerHTML = `<span class="pulse-dot"></span> ${t('ready')}`;
                 badgeStatus.className = 'status-pill';
             }
             
@@ -1006,7 +1289,7 @@ const setup_panel = {
         } catch (e) {
             status.innerText = "Error: " + e.message;
             if (badgeStatus) {
-                badgeStatus.innerText = "Init Failed";
+                badgeStatus.innerText = t('initFailed');
                 badgeStatus.className = 'status-pill danger';
             }
         }
@@ -1031,10 +1314,10 @@ const setup_panel = {
 // 4. Calibration Phase
 const calibration_phase = {
     type: jsPsychHtmlButtonResponse,
-    stimulus: `
+    stimulus: () => `
         <div id="cali-ready-msg" style="text-align: center;">
-            <h3 style="font-size: 20px; font-weight: 700; color: #1d2129; margin-bottom: 8px;">Starting Calibration...</h3>
-            <p style="color: #86909c; font-size: 14px;">Please maintain steady fixation on each target on screen.</p>
+            <h3 style="font-size: 20px; font-weight: 700; color: #1d2129; margin-bottom: 8px;">${t('caliStarting')}</h3>
+            <p style="color: #86909c; font-size: 14px;">${t('caliFixate')}</p>
         </div>
     `,
     choices: [],
@@ -1059,7 +1342,7 @@ const calibration_phase = {
             if (data === null && ts === null) {
                 GazeFollower2.setGazeListener(originalListener);
                 const msg = document.getElementById('cali-ready-msg');
-                if (msg) msg.innerHTML = `<h3 style="color: #00b42a; font-size: 22px;">✓ Calibration Completed Successfully!</h3>`;
+                if (msg) msg.innerHTML = `<h3 style="color: #00b42a; font-size: 22px;">✓ ${t('caliSuccess')}</h3>`;
                 setTimeout(() => jsPsych.finishTrial(), 600);
             } else {
                 if (originalListener) originalListener(data, ts);
@@ -1074,7 +1357,7 @@ const validation_phase = {
     stimulus: () => config.doValidation ? `
         <div id="val-hud" style="position: fixed; top: 28px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid #e5e6eb; border-radius: 9999px; padding: 9px 24px; display: flex; align-items: center; gap: 12px; z-index: 1000000; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
             <div style="width: 8px; height: 8px; border-radius: 50%; background: #165dff; box-shadow: 0 0 8px rgba(22,93,255,0.5);"></div>
-            <span id="val-hud-text" style="font-size: 13.5px; font-weight: 600; color: #1d2129;">Validation: Target 1</span>
+            <span id="val-hud-text" style="font-size: 13.5px; font-weight: 600; color: #1d2129;">${t('valTargetHud', { idx: '1' })}</span>
         </div>
     ` : '',
     choices: [],
@@ -1122,20 +1405,19 @@ const validation_phase = {
             position: 'absolute',
             top: '50%',
             left: '50%',
-            width: '56px',
-            height: '56px',
+            width: '38px',
+            height: '38px',
             borderRadius: '50%',
+            border: '2px solid rgba(22, 93, 255, 0.4)',
             transform: 'translate(-50%, -50%)',
-            border: '2px solid rgba(22, 93, 255, 0.35)',
-            boxShadow: '0 0 14px rgba(22, 93, 255, 0.2)'
+            animation: 'gf-spin 2s linear infinite'
         });
         targetWrap.appendChild(pulseRing);
 
         const targetCore = document.createElement('div');
         Object.assign(targetCore.style, {
-            position: 'relative',
-            width: '28px',
-            height: '28px',
+            width: '20px',
+            height: '20px',
             borderRadius: '50%',
             background: '#165dff',
             border: '2.5px solid #165dff',
@@ -1159,64 +1441,72 @@ const validation_phase = {
         document.body.appendChild(targetWrap);
 
         let currentIndex = 0;
-        let currentSamples = [];
-        let validationResults = [];
-        const geometry = getScreenGeometry(config.screenWidthCm, config.screenHeightCm, config.eyeDistanceCm);
-        
+        const validationData = [];
+
         const showNextPoint = () => {
             if (currentIndex >= points.length) {
                 targetWrap.remove();
                 const hud = document.getElementById('val-hud');
                 if (hud) hud.remove();
-                jsPsych.finishTrial({
-                    screenWidthCm: config.screenWidthCm,
-                    screenHeightCm: config.screenHeightCm,
-                    eyeDistanceCm: config.eyeDistanceCm,
-                    caliAlgorithm: config.caliAlgorithm,
-                    caliAlpha: config.caliAlpha,
-                    results: validationResults
-                });
+                jsPsych.finishTrial({ results: validationData });
                 return;
             }
 
-            const tx = points[currentIndex][0];
-            const ty = points[currentIndex][1];
+            const pt = points[currentIndex];
+            const tx = pt[0];
+            const ty = pt[1];
+
             targetWrap.style.left = tx + 'px';
             targetWrap.style.top = ty + 'px';
-            
+
             const hudText = document.getElementById('val-hud-text');
             if (hudText) {
-                hudText.innerText = `Validation: Target ${currentIndex + 1} / ${points.length} (Please maintain steady gaze)`;
+                hudText.innerText = t('valTargetHud', { idx: String(currentIndex + 1) });
             }
 
-            currentSamples = [];
-
-            // Skip initial 500ms saccade orient period, then collect samples for 1500ms and run D3 (winSize=8)
             setTimeout(() => {
-                const listener = (data, ts) => {
+                const currentSamples = [];
+                const listener = (data) => {
                     if (data && Number.isFinite(data.x) && Number.isFinite(data.y)) {
-                        currentSamples.push({ x: data.x, y: data.y, timestamp: ts });
+                        currentSamples.push({ x: data.x, y: data.y, timestamp: performance.now() });
                     }
                 };
+
                 const old = GazeFollower2.listener;
                 GazeFollower2.setGazeListener(listener);
 
                 setTimeout(() => {
                     GazeFollower2.setGazeListener(old);
-
+                    
                     if (currentSamples.length === 0 && Number.isFinite(GazeFollower2.targetX) && Number.isFinite(GazeFollower2.targetY)) {
                         currentSamples.push({ x: GazeFollower2.targetX, y: GazeFollower2.targetY, timestamp: performance.now() });
                     }
 
-                    const d3Metrics = computeD3Metrics(currentSamples, { x: tx, y: ty }, geometry, 8);
+                    const d3Metrics = computeD3Metrics(
+                        currentSamples, 
+                        { x: tx, y: ty }, 
+                        config.screenWidthCm, 
+                        config.screenHeightCm, 
+                        config.eyeDistanceCm, 
+                        25
+                    );
 
-                    validationResults.push({
+                    let predX = tx;
+                    let predY = ty;
+                    if (currentSamples.length > 0) {
+                        const effWin = Math.min(25, currentSamples.length);
+                        const bestStart = d3Metrics.bestWindowIndex >= 0 ? d3Metrics.bestWindowIndex : 0;
+                        const win = currentSamples.slice(bestStart, bestStart + effWin);
+                        let sumX = 0, sumY = 0;
+                        win.forEach(p => { sumX += p.x; sumY += p.y; });
+                        predX = sumX / win.length;
+                        predY = sumY / win.length;
+                    }
+
+                    validationData.push({
                         point: currentIndex + 1,
                         target: { x: tx, y: ty },
-                        predicted: d3Metrics.predicted,
-                        errPx: d3Metrics.accPx,
-                        errCm: d3Metrics.accCm,
-                        deg: d3Metrics.accDeg,
+                        predicted: { x: predX, y: predY },
                         accPx: d3Metrics.accPx,
                         accCm: d3Metrics.accCm,
                         accMm: d3Metrics.accMm,
@@ -1291,13 +1581,13 @@ const validation_results = {
         // Rating pill badge based on academic gaze standards
         let gradeBadge = '';
         if (meanAccDeg < 1.3) {
-            gradeBadge = '<span class="status-pill" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ★ Excellent Accuracy (Research Grade)</span>';
+            gradeBadge = `<span class="status-pill" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ${t('gradeExcellent')}</span>`;
         } else if (meanAccDeg < 2.0) {
-            gradeBadge = '<span class="status-pill info" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ✓ Good Accuracy (Interactive Grade)</span>';
+            gradeBadge = `<span class="status-pill info" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ${t('gradeGood')}</span>`;
         } else if (meanAccDeg < 3.0) {
-            gradeBadge = '<span class="status-pill warning" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ▲ Moderate Accuracy (Maintain steady posture)</span>';
+            gradeBadge = `<span class="status-pill warning" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ${t('gradeModerate')}</span>`;
         } else {
-            gradeBadge = '<span class="status-pill danger" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ⚠ Recalibration Recommended</span>';
+            gradeBadge = `<span class="status-pill danger" style="font-size: 13px; padding: 5px 12px;"><span class="pulse-dot"></span> ${t('gradeRecalib')}</span>`;
         }
 
         const geo = getScreenGeometry(config.screenWidthCm, config.screenHeightCm, config.eyeDistanceCm);
@@ -1308,9 +1598,15 @@ const validation_results = {
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
                     <div>
-                        <h2 style="font-size: 22px; font-weight: 700; color: #1d2129; letter-spacing: -0.01em; margin-bottom: 4px;">D3 Accuracy & Precision Analytics</h2>
+                        <h2 style="font-size: 22px; font-weight: 700; color: #1d2129; letter-spacing: -0.01em; margin-bottom: 4px;">${t('valReportTitle')}</h2>
                         <p style="font-size: 13px; color: #86909c;">
-                            Display: ${config.screenWidthCm} × ${config.screenHeightCm} cm @ ${config.eyeDistanceCm} cm Distance • ${config.caliAlgorithm === 'ridge' ? `Multivariate Ridge (α=${config.caliAlpha})` : 'SVR'} (${results.length} validation points • D3 Sliding Window)
+                            ${t('valReportSubtitle', {
+                                w: String(config.screenWidthCm),
+                                h: String(config.screenHeightCm),
+                                d: String(config.eyeDistanceCm),
+                                algo: config.caliAlgorithm === 'ridge' ? `Multivariate Ridge (α=${config.caliAlpha})` : 'SVR',
+                                count: String(results.length)
+                            })}
                         </p>
                     </div>
                     <div>
@@ -1321,23 +1617,23 @@ const validation_results = {
                 <!-- Hero Metric KPI Cards -->
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
                     <div class="studio-card" style="padding: 18px; border-top: 3px solid #165dff;">
-                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">D3 Mean Accuracy (ACC)</span>
+                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">${t('meanAccuracyTitle')}</span>
                         <div style="font-size: 32px; font-weight: 700; color: #165dff; letter-spacing: -0.02em;">
                             ${meanAccDeg.toFixed(2)}° <span style="font-size: 17px; font-weight: 600; color: #4e5969;">(${meanAccCm.toFixed(2)} cm)</span>
                         </div>
-                        <span style="font-size: 12px; color: #86909c; margin-top: 4px; display: block;">${meanAccPx.toFixed(1)} px • ${meanAccMm.toFixed(1)} mm displacement</span>
+                        <span style="font-size: 12px; color: #86909c; margin-top: 4px; display: block;">${t('displacementLabel', { px: meanAccPx.toFixed(1), mm: meanAccMm.toFixed(1) })}</span>
                     </div>
 
                     <div class="studio-card" style="padding: 18px; border-top: 3px solid #00b42a;">
-                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">D3 Mean Precision (Pre / RMS)</span>
+                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">${t('meanPrecisionTitle')}</span>
                         <div style="font-size: 32px; font-weight: 700; color: #00b42a; letter-spacing: -0.02em;">
                             ${meanRmsDeg.toFixed(2)}° <span style="font-size: 17px; font-weight: 600; color: #4e5969;">(${meanRmsCm.toFixed(2)} cm)</span>
                         </div>
-                        <span style="font-size: 12px; color: #86909c; margin-top: 4px; display: block;">RMS: ${meanRmsPx.toFixed(1)} px • STD: ${meanStdDeg.toFixed(2)}° (${meanStdCm.toFixed(2)} cm)</span>
+                        <span style="font-size: 12px; color: #86909c; margin-top: 4px; display: block;">${t('precisionSubLabel', { px: meanRmsPx.toFixed(1), deg: meanStdDeg.toFixed(2), cm: meanStdCm.toFixed(2) })}</span>
                     </div>
 
                     <div class="studio-card" style="padding: 18px; border-top: 3px solid #ff7d00;">
-                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">Screen & Viewing Geometry</span>
+                        <span style="font-size: 12px; font-weight: 600; color: #86909c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;">${t('screenGeometryTitle')}</span>
                         <div style="font-size: 26px; font-weight: 700; color: #1d2129; letter-spacing: -0.02em; margin-top: 4px;">
                             ${config.screenWidthCm}×${config.screenHeightCm} <span style="font-size: 15px; font-weight: 500; color: #86909c;">cm @ ${config.eyeDistanceCm} cm</span>
                         </div>
@@ -1348,19 +1644,19 @@ const validation_results = {
                 <!-- Per-Point Detailed Table -->
                 <div class="studio-card" style="padding: 0; overflow: hidden; margin-bottom: 20px;">
                     <div style="padding: 14px 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #fafbfc;">
-                        <span style="font-size: 13px; font-weight: 600; color: #1d2129;">Spatial Validation Details (D3 Best Fixation Window)</span>
-                        <span style="font-size: 12px; color: #86909c;">Targets 1 to ${results.length}</span>
+                        <span style="font-size: 13px; font-weight: 600; color: #1d2129;">${t('tableTitle')}</span>
+                        <span style="font-size: 12px; color: #86909c;">${t('tableSubtitle', { count: String(results.length) })}</span>
                     </div>
                     <div style="max-height: 240px; overflow-y: auto;">
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
                             <thead>
                                 <tr style="background: #fafbfc; color: #86909c; border-bottom: 1px solid var(--border-color); font-size: 12px;">
-                                    <th style="padding: 10px 18px; font-weight: 600;">#</th>
-                                    <th style="padding: 10px 18px; font-weight: 600;">Target Position</th>
-                                    <th style="padding: 10px 18px; font-weight: 600;">D3 Predicted Gaze</th>
-                                    <th style="padding: 10px 18px; font-weight: 600;">D3 ACC (cm / px)</th>
-                                    <th style="padding: 10px 18px; font-weight: 600;">D3 ACC (°)</th>
-                                    <th style="padding: 10px 18px; font-weight: 600;">D3 Pre RMS (cm / °)</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colNum')}</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colTargetPos')}</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colPredGaze')}</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colAccCmPx')}</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colAccDeg')}</th>
+                                    <th style="padding: 10px 18px; font-weight: 600;">${t('colPreRms')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1378,10 +1674,10 @@ const validation_results = {
                 <tr style="border-bottom: 1px solid #f2f3f5; transition: background 0.15s;">
                     <td style="padding: 10px 18px; font-weight: 600; color: #4e5969;">${r.point}</td>
                     <td style="padding: 10px 18px; color: #1d2129;">(${Math.round(r.target.x)}, ${Math.round(r.target.y)})</td>
-                    <td style="padding: 10px 18px; color: #1d2129;">(${predX}, ${predY})</td>
-                    <td style="padding: 10px 18px; font-weight: 600; color: #1d2129;">${accCmStr}</td>
+                    <td style="padding: 10px 18px; font-family: monospace; color: #165dff;">(${predX}, ${predY})</td>
+                    <td style="padding: 10px 18px; color: #4e5969;">${accCmStr}</td>
                     <td style="padding: 10px 18px; font-weight: 600; color: ${angleColor};">${accDegStr}</td>
-                    <td style="padding: 10px 18px; font-weight: 600; color: #00b42a;">${rmsStr}</td>
+                    <td style="padding: 10px 18px; color: #4e5969;">${rmsStr}</td>
                 </tr>
             `;
         });
@@ -1396,7 +1692,7 @@ const validation_results = {
 
         return html;
     },
-    choices: () => config.doValidation ? ['Launch Live Tracking'] : [],
+    choices: () => config.doValidation ? [t('launchLiveTracking')] : [],
     button_html: '<button class="studio-btn" style="min-width: 260px; margin-top: 10px;">%choice%</button>',
     trial_duration: () => config.doValidation ? null : 0
 };
@@ -1404,16 +1700,16 @@ const validation_results = {
 // 7. Live Gaze Visualization Phase
 const free_gaze = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: `
+    stimulus: () => `
         <div id="gaze-hud" style="position: fixed; top: 28px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid #e5e6eb; border-radius: 9999px; padding: 8px 24px; display: flex; align-items: center; gap: 14px; z-index: 1000000; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
             <div style="width: 8px; height: 8px; border-radius: 50%; background: #165dff;" class="pulse-dot"></div>
-            <span style="font-size: 13.5px; font-weight: 600; color: #1d2129;">Live Gaze Tracking</span>
+            <span style="font-size: 13.5px; font-weight: 600; color: #1d2129;">${t('liveTrackingActive')}</span>
             <span id="gaze-perf" style="font-size: 12px; font-weight: 600; color: #00b42a; background: #e8ffea; padding: 3px 8px; border-radius: 4px;">-- FPS · -- ms</span>
             <span id="gaze-coords" style="font-size: 12.5px; font-family: monospace; color: #4e5969; background: #f2f3f5; padding: 3px 8px; border-radius: 4px;">X: --- Y: ---</span>
-            <span style="font-size: 12px; color: #86909c; border-left: 1px solid #e5e6eb; padding-left: 12px;">Press [Space] to Exit</span>
+            <span style="font-size: 12px; color: #86909c; border-left: 1px solid #e5e6eb; padding-left: 12px;">${t('pressSpaceExit')}</span>
         </div>
         <div style="position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); color: #86909c; font-size: 13px; pointer-events: none; background: rgba(255, 255, 255, 0.9); padding: 6px 16px; border-radius: 9999px; border: 1px solid #e5e6eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-            Follow the tracking reticle with your eyes across the screen
+            ${t('followReticle')}
         </div>
     `,
     choices: [' '],

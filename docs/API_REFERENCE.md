@@ -153,13 +153,11 @@ import GazeFollower2, {
 ### `loadModel(modelPath?, progressCallback?): Promise<GazeFollower2>`
 动态加载或热切换视线估计神经网络模型（支持在 `begin()` 前后随时调用）。
 - **参数**：
-  - `modelPath` (`string`, 默认: `'models/GazeNet_Next.onnx'`): 模型 URL。支持原生 `.onnx` 模型或 AES-CBC 内存解密的 `.bin` 加密模型。
-  - `progressCallback` (`((ratio: number) => void) | null`): 下载/解密进度回调 (`0.10` 开始下载，`0.70` 下载完成，`0.75` 内存解密，`0.90` 创建 ONNX 会话，`1.00` 完成)。
-- **可选官方模型规格（存放在 `models/` 目录）**：
+  - `modelPath` (`string`, 默认: `'models/GazeNet_Next.onnx'`): 模型 URL，支持原生 `.onnx` 格式。
+  - `progressCallback` (`((ratio: number) => void) | null`): 下载/加载进度回调 (`0.10` 开始下载，`0.70` 下载完成，`0.90` 创建 ONNX 会话，`1.00` 完成)。
+- **官方开源模型规格（存放在 `models/` 目录）**：
   - **`models/GazeNet_Next.onnx`**：8,006,908 字节 (~8.0 MB)，全精度 FP32，输入包含人脸 (`224x224`)、左眼 (`112x112`)、右眼 (`112x112`) 与 12 维几何框，输出 258 维特征向量。
-  - **`models/GazeNet_Next.bin`**：8,006,912 字节 (~8.0 MB)，AES-256-CBC 加密全精度二进制模型。
   - **`models/GazeNet_Next_fp16.onnx`**：4,019,752 字节 (~4.0 MB)，半精度 FP16，网络传输体积减小 50%，输入/输出保持 Float32，适配 WebGL / WebGPU 极速推理。
-  - **`models/GazeNet_Next_fp16.bin`**：4,019,760 字节 (~4.0 MB)，AES-256-CBC 加密半精度二进制模型。
 
 ---
 

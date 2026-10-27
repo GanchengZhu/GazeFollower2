@@ -14,23 +14,16 @@ test('Model Directory Structure - Files Exist and Sizes are Valid', () => {
     assert.ok(fs.existsSync(modelsDir), 'models/ directory should exist');
 
     const fp32Onnx = path.join(modelsDir, 'GazeNet_Next.onnx');
-    const fp32Bin = path.join(modelsDir, 'GazeNet_Next.bin');
+    const fp16Onnx = path.join(modelsDir, 'GazeNet_Next_fp16.onnx');
 
     assert.ok(fs.existsSync(fp32Onnx), 'models/GazeNet_Next.onnx should exist');
-    assert.ok(fs.existsSync(fp32Bin), 'models/GazeNet_Next.bin should exist');
+    assert.ok(fs.existsSync(fp16Onnx), 'models/GazeNet_Next_fp16.onnx should exist');
 
     const fp32OnnxStat = fs.statSync(fp32Onnx);
-    const fp32BinStat = fs.statSync(fp32Bin);
+    const fp16OnnxStat = fs.statSync(fp16Onnx);
 
     assert.ok(fp32OnnxStat.size > 7_000_000, 'FP32 ONNX model should be ~8 MB');
-    assert.ok(fp32BinStat.size > 7_000_000, 'FP32 BIN model should be ~8 MB');
-
-    // Optional FP16 model check if generated
-    const fp16Onnx = path.join(modelsDir, 'GazeNet_Next_fp16.onnx');
-    if (fs.existsSync(fp16Onnx)) {
-        const fp16Stat = fs.statSync(fp16Onnx);
-        assert.ok(fp16Stat.size > 3_500_000 && fp16Stat.size < 5_000_000, 'FP16 ONNX model should be ~4 MB (50% reduction)');
-    }
+    assert.ok(fp16OnnxStat.size > 3_500_000 && fp16OnnxStat.size < 5_000_000, 'FP16 ONNX model should be ~4 MB (50% reduction)');
 });
 
 test('GazeEstimator and GazeFollower2 Default Model Path Points to models/GazeNet_Next.onnx', () => {

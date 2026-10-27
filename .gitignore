@@ -22,15 +22,13 @@ __pycache__/
 # Temporary user data
 temp_chrome_user_data/
 
-# Internal / Proprietary Model Weights (Only public release models in models/ are tracked)
+# Internal / Proprietary Model Weights (Only public ONNX models in models/ are tracked)
 *.onnx
 *.bin
 *.pth
 *.mnn
 !models/GazeNet_Next.onnx
-!models/GazeNet_Next.bin
 !models/GazeNet_Next_fp16.onnx
-!models/GazeNet_Next_fp16.bin
 
 # Internal Dev Demo (Keep local only for internal testing)
 index_dev.html
