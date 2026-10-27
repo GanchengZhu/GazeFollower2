@@ -515,7 +515,6 @@ function renderSetupHtml() {
                     <button id="btn-lang-toggle" class="studio-btn studio-btn-secondary" style="padding: 4px 12px; font-size: 12px; height: 30px; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer;">
                         🌐 <span id="btn-lang-text">${t('langBtn')}</span>
                     </button>
-                    <span id="badge-fps" class="status-pill info"><span class="pulse-dot"></span> 30 FPS Live</span>
                     <span id="badge-status" class="status-pill info"><span class="pulse-dot"></span> ${t('initializing')}</span>
                 </div>
             </div>
@@ -537,25 +536,7 @@ function renderSetupHtml() {
                             </div>
                         </div>
 
-                        <!-- Real-Time Pipeline Telemetry HUD (Mediapipe + GazeNet + FPS) -->
-                        <div style="margin-top: 12px; padding: 10px 12px; background: #f7f8fa; border-radius: 6px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center;">
-                            <div>
-                                <div id="label-throughput" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('throughput')}</div>
-                                <div id="metric-fps" style="font-size: 13.5px; font-weight: 700; color: #00b42a; margin-top: 2px;">-- FPS</div>
-                            </div>
-                            <div>
-                                <div id="label-total-latency" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('pipelineTotal')}</div>
-                                <div id="metric-total-ms" style="font-size: 13.5px; font-weight: 700; color: #165dff; margin-top: 2px;">-- ms</div>
-                            </div>
-                            <div>
-                                <div id="label-mediapipe" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('mediapipe')}</div>
-                                <div id="metric-media-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
-                            </div>
-                            <div>
-                                <div id="label-gazenet" style="font-size: 10.5px; font-weight: 500; color: #86909c;">${t('gazeNet')}</div>
-                                <div id="metric-gaze-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Neural Model Selector Card (ONNX Only: FP16 vs FP32) -->
@@ -1211,26 +1192,10 @@ const setup_panel = {
             };
         }
 
-        // Real-Time Pipeline Telemetry HUD elements
-        const metricFps = document.getElementById('metric-fps');
-        const metricTotal = document.getElementById('metric-total-ms');
-        const metricMedia = document.getElementById('metric-media-ms');
-        const metricGaze = document.getElementById('metric-gaze-ms');
-        const badgeFps = document.getElementById('badge-fps');
         const badgeFace = document.getElementById('badge-face-tracking');
 
         if (typeof GazeFollower2.setStatsListener === 'function') {
             GazeFollower2.setStatsListener((stats) => {
-                if (metricFps) metricFps.innerText = `${stats.fps} FPS`;
-                if (metricTotal) metricTotal.innerText = `${stats.totalMs} ms`;
-                if (metricMedia) metricMedia.innerText = `${stats.mediapipeMs} ms`;
-                if (metricGaze) metricGaze.innerText = `${stats.gazeMs} ms`;
-
-                if (badgeFps) {
-                    badgeFps.innerHTML = `<span class="pulse-dot"></span> ${stats.fps} FPS Live`;
-                    badgeFps.className = stats.fps >= 24 ? 'status-pill' : (stats.fps >= 15 ? 'status-pill warning' : 'status-pill danger');
-                }
-
                 if (badgeFace) {
                     if (stats.isFaceDetected) {
                         badgeFace.innerHTML = `<span class="pulse-dot"></span> ${t('faceDetected')}`;
@@ -1704,7 +1669,7 @@ const free_gaze = {
         <div id="gaze-hud" style="position: fixed; top: 28px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid #e5e6eb; border-radius: 9999px; padding: 8px 24px; display: flex; align-items: center; gap: 14px; z-index: 1000000; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
             <div style="width: 8px; height: 8px; border-radius: 50%; background: #165dff;" class="pulse-dot"></div>
             <span style="font-size: 13.5px; font-weight: 600; color: #1d2129;">${t('liveTrackingActive')}</span>
-            <span id="gaze-perf" style="font-size: 12px; font-weight: 600; color: #00b42a; background: #e8ffea; padding: 3px 8px; border-radius: 4px;">-- FPS · -- ms</span>
+
             <span id="gaze-coords" style="font-size: 12.5px; font-family: monospace; color: #4e5969; background: #f2f3f5; padding: 3px 8px; border-radius: 4px;">X: --- Y: ---</span>
             <span style="font-size: 12px; color: #86909c; border-left: 1px solid #e5e6eb; padding-left: 12px;">${t('pressSpaceExit')}</span>
         </div>
@@ -1722,15 +1687,6 @@ const free_gaze = {
         }
         
         const coordsText = document.getElementById('gaze-coords');
-        const perfText = document.getElementById('gaze-perf');
-
-        if (typeof GazeFollower2.setStatsListener === 'function') {
-            GazeFollower2.setStatsListener((stats) => {
-                if (perfText) {
-                    perfText.innerText = `${stats.fps} FPS · ${stats.totalMs}ms (MP: ${stats.mediapipeMs}ms, Net: ${stats.gazeMs}ms)`;
-                }
-            });
-        }
 
         GazeFollower2.setGazeListener((data) => {
             if (data && !isNaN(data.x) && !isNaN(data.y)) {
