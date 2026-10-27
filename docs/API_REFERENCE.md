@@ -63,7 +63,7 @@ import GazeFollower2, {
 创建一个新的 `GazeFollower2` 实例（若使用全局单例 `window.GazeFollower2` 则无需手动 `new`）。
 
 - **默认行为**：
-  - 默认模型：`'GazeNet_Next.onnx'`（开源标准全精度 ONNX 权重）
+  - 默认模型：`'models/GazeNet_Next.onnx'`（开源标准全精度 ONNX 权重，位于 `models/` 目录）
   - 默认启用启发式滤波：`enableGazeFilter = true`
   - 默认滤波前瞻窗口：`look_ahead = 2`（滑动窗口总长 2 × 2 + 1 = 5 帧）
   - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`，基准 $\lambda = 1.0$)
@@ -72,11 +72,11 @@ import GazeFollower2, {
       - **9 点标定 (`'9-point'`)**：推荐默认 $\lambda = 2.0$（标准 3×3 网格平滑过渡）
       - **13 点标定 (`'13-point'`)**：推荐默认 $\lambda = 1.0$（密集网格空间完备，高拟合精度）
 - **参数说明**：
-  - `onnxModelPath` (`string | GazeFollower2Options`, 可选, 默认: `'GazeNet_Next.onnx'`)：
-    - 传入字符串：模型文件的绝对或相对 URL。
+  - `onnxModelPath` (`string | GazeFollower2Options`, 可选, 默认: `'models/GazeNet_Next.onnx'`)：
+    - 传入字符串：模型文件的绝对或相对 URL（例如 `'models/GazeNet_Next.onnx'` 或 `'models/GazeNet_Next_fp16.onnx'`）。
     - 传入配置对象：支持 `{ modelPath, onnxModelPath, look_ahead, lookAhead, enableHeuristicFilter, enableGazeFilter, ridgeAlpha, alpha }`。
   - `options` (`number | GazeFollower2Options`, 可选, 默认: `{}`)：
-    - 传入数字：直接设置 `look_ahead` 窗口（如 `new GazeFollower2('GazeNet_Next.onnx', 3)`）。
+    - 传入数字：直接设置 `look_ahead` 窗口（如 `new GazeFollower2('models/GazeNet_Next.onnx', 3)`）。
     - 传入配置对象：可单独覆盖滤波或正则化超参数。
 
 ### 实例属性速查表 (Instance Properties)
@@ -153,10 +153,13 @@ import GazeFollower2, {
 ### `loadModel(modelPath?, progressCallback?): Promise<GazeFollower2>`
 动态加载或热切换视线估计神经网络模型（支持在 `begin()` 前后随时调用）。
 - **参数**：
-  - `modelPath` (`string`, 默认: `'GazeNet_Next.onnx'`): 模型 URL。支持原生 `.onnx` 模型或 AES-CBC 内存解密的 `.bin` 加密模型。
+  - `modelPath` (`string`, 默认: `'models/GazeNet_Next.onnx'`): 模型 URL。支持原生 `.onnx` 模型或 AES-CBC 内存解密的 `.bin` 加密模型。
   - `progressCallback` (`((ratio: number) => void) | null`): 下载/解密进度回调 (`0.10` 开始下载，`0.70` 下载完成，`0.75` 内存解密，`0.90` 创建 ONNX 会话，`1.00` 完成)。
-- **默认模型规格**：
-  - **`GazeNet_Next.onnx`**：8,006,908 字节 (~8.0 MB)，全精度 FP32，输入包含人脸 (`224x224`)、左眼 (`112x112`)、右眼 (`112x112`) 与 12 维几何框，输出 258 维特征向量。
+- **可选官方模型规格（存放在 `models/` 目录）**：
+  - **`models/GazeNet_Next.onnx`**：8,006,908 字节 (~8.0 MB)，全精度 FP32，输入包含人脸 (`224x224`)、左眼 (`112x112`)、右眼 (`112x112`) 与 12 维几何框，输出 258 维特征向量。
+  - **`models/GazeNet_Next.bin`**：8,006,912 字节 (~8.0 MB)，AES-256-CBC 加密全精度二进制模型。
+  - **`models/GazeNet_Next_fp16.onnx`**：4,019,752 字节 (~4.0 MB)，半精度 FP16，网络传输体积减小 50%，输入/输出保持 Float32，适配 WebGL / WebGPU 极速推理。
+  - **`models/GazeNet_Next_fp16.bin`**：4,019,760 字节 (~4.0 MB)，AES-256-CBC 加密半精度二进制模型。
 
 ---
 
@@ -604,7 +607,7 @@ export type GazeListenerCallback = (
 
 /** GazeFollower2 初始化与构造选项 */
 export interface GazeFollower2Options {
-  /** 模型文件 URL，默认 'GazeNet_Next.onnx' */
+  /** 模型文件 URL，默认 'models/GazeNet_Next.onnx' */
   modelPath?: string;
   onnxModelPath?: string;
   /** 是否启用启发式防抖滤波，默认 true */

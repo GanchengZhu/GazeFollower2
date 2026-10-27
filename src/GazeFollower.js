@@ -9,11 +9,11 @@ import { OneEuroFilter, LowPassFilter } from './OneEuroFilter.js';
 
 export class GazeFollower2 {
     /**
-     * @param {string|Object} [onnxModelPath='GazeNet_Next.onnx'] Model path or configuration object
+     * @param {string|Object} [onnxModelPath='models/GazeNet_Next.onnx'] Model path or configuration object
      * @param {number|Object} [options={}] Optional look_ahead number or configuration object { look_ahead?: number, lookAhead?: number, enableHeuristicFilter?: boolean, enableGazeFilter?: boolean }
      */
-    constructor(onnxModelPath = 'GazeNet_Next.onnx', options = {}) {
-        let modelPath = 'GazeNet_Next.onnx';
+    constructor(onnxModelPath = 'models/GazeNet_Next.onnx', options = {}) {
+        let modelPath = 'models/GazeNet_Next.onnx';
         let cfg = {};
 
         if (onnxModelPath && typeof onnxModelPath === 'object') {
@@ -509,7 +509,7 @@ export class GazeFollower2 {
         return this;
     }
 
-    async loadModel(modelPath = 'GazeNet_Next.onnx', progressCallback = null) {
+    async loadModel(modelPath = 'models/GazeNet_Next.onnx', progressCallback = null) {
         this.estimator = new GazeEstimator(modelPath);
         await this.estimator.init(progressCallback);
         return this;

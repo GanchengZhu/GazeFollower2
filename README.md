@@ -148,13 +148,15 @@ if (GazeFollower2.isReady()) {
 ```
 
 #### `GazeFollower2.loadModel(modelPath?: string, progressCallback?: (progress: number) => void): Promise<GazeFollower2>`
-Dynamically switches or reloads the ONNX gaze estimation neural model. Defaults to `'GazeNet_Next.onnx'`.
-- `'GazeNet_Next.onnx'`: Standard full-precision SOTA neural model (~8.0 MB, default).
-- `'GazeNet_Next.bin'`: Encrypted binary neural model (~8.0 MB, decoded in-memory with Web Crypto API).
+Dynamically switches or reloads the ONNX gaze estimation neural model. Defaults to `'models/GazeNet_Next.onnx'`.
+- `'models/GazeNet_Next.onnx'`: Standard full-precision SOTA neural model (~8.0 MB, default).
+- `'models/GazeNet_Next.bin'`: Encrypted binary neural model (~8.0 MB, decoded in-memory with Web Crypto API).
+- `'models/GazeNet_Next_fp16.onnx'`: Half-precision FP16 ONNX model (~4.0 MB, 50% smaller download, GPU/WebGPU accelerated).
+- `'models/GazeNet_Next_fp16.bin'`: Encrypted FP16 binary model (~4.0 MB, decoded in-memory).
 
 ```javascript
-// Load the GazeNet_Next model
-await GazeFollower2.loadModel('GazeNet_Next.onnx', (progress) => {
+// Load the GazeNet_Next model (or FP16 variant)
+await GazeFollower2.loadModel('models/GazeNet_Next.onnx', (progress) => {
   console.log(`Downloading: ${Math.round(progress * 100)}%`);
 });
 ```
