@@ -196,6 +196,26 @@ import GazeFollower2, {
 ### `getCurrentPrediction(): { x: number, y: number } | null`
 同步即时读取最新一帧视线坐标。若未标定或人脸丢失则返回 `null`。
 
+### `setStatsListener(callback): GazeFollower2`
+注册全链路推理性能监测回调（每帧触发），实时输出整个 Pipeline（MediaPipe + GazeEstimation）的单帧耗时与 FPS。
+- **参数**：`callback(stats)`
+  - `stats`:
+    - `fps` (`number`): 当前实时帧率（基于滑动窗口计算，如 `30.2`）
+    - `totalMs` (`number`): 整个 Pipeline 单帧总耗时（从视频抓帧到最终注视点输出，单位 ms）
+    - `mediapipeMs` (`number`): MediaPipe FaceMesh 人脸关键点检测耗时（单位 ms）
+    - `gazeMs` (`number`): GazeNet ONNX 神经网络推理耗时（单位 ms，FP16 对比 FP32 差异显著）
+    - `faceAlignMs` (`number`): 人脸仿射对齐与多张量预处理耗时（单位 ms）
+    - `isFaceDetected` (`boolean`): 当前帧是否捕捉到人脸
+- **代码示例**：
+  ```javascript
+  GazeFollower2.setStatsListener((stats) => {
+    console.log(`实时 FPS: ${stats.fps} | 总耗时: ${stats.totalMs}ms [MediaPipe: ${stats.mediapipeMs}ms, GazeNet: ${stats.gazeMs}ms]`);
+  });
+  ```
+
+### `getPipelineStats(): PipelineStats`
+同步即时获取当前 Pipeline 性能度量快照。亦可直接读取属性 `GazeFollower2.stats` 或 `GazeFollower2.pipelineStats`。
+
 ---
 
 ## 6. 启发式防抖滤波与 `look_ahead` 配置 (Heuristic Filtering)

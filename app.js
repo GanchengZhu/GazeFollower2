@@ -39,6 +39,7 @@ const jsPsych = initJsPsych({
 });
 
 let config = {
+    modelPath: 'models/GazeNet_Next_fp16.onnx',
     caliMode: '13-point',
     caliOrder: 'random',
     caliMethod: 'click',
@@ -375,6 +376,45 @@ const setup_panel = {
                             <div id="sdk-status-wrap" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.92); z-index: 10;">
                                 <div style="width: 32px; height: 32px; border: 3px solid #e5e6eb; border-top-color: #165dff; border-radius: 50%; animation: gf-spin 1s linear infinite; margin-bottom: 12px;"></div>
                                 <p id="sdk-status" style="color: #4e5969; font-size: 13px; font-weight: 500;">Loading neural model...</p>
+                            </div>
+                        </div>
+
+                        <!-- Real-Time Pipeline Telemetry HUD (Mediapipe + GazeNet + FPS) -->
+                        <div style="margin-top: 12px; padding: 10px 12px; background: #f7f8fa; border-radius: 6px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center;">
+                            <div>
+                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">Throughput</div>
+                                <div id="metric-fps" style="font-size: 13.5px; font-weight: 700; color: #00b42a; margin-top: 2px;">-- FPS</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">Pipeline Total</div>
+                                <div id="metric-total-ms" style="font-size: 13.5px; font-weight: 700; color: #165dff; margin-top: 2px;">-- ms</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">MediaPipe</div>
+                                <div id="metric-media-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10.5px; font-weight: 500; color: #86909c;">GazeNet</div>
+                                <div id="metric-gaze-ms" style="font-size: 13.5px; font-weight: 600; color: #4e5969; margin-top: 2px;">-- ms</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Neural Model Selector Card (FP16 vs FP32) -->
+                    <div class="studio-card" style="padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 13px; font-weight: 600; color: #1d2129;">Inference Model (模型选项)</span>
+                            <span id="badge-model-tag" class="status-pill info" style="font-size: 11px;">FP16 半精度 (~3.8 MB)</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <select id="sel-model-variant" class="studio-select" style="width: 100%;">
+                                <option value="models/GazeNet_Next_fp16.onnx" selected>GazeNet_Next FP16 (3.8 MB - 半精度极速推荐)</option>
+                                <option value="models/GazeNet_Next.onnx">GazeNet_Next FP32 (7.6 MB - 原始全精度基准)</option>
+                                <option value="models/GazeNet_Next_fp16.bin">GazeNet_Next FP16 .bin (3.8 MB - 加密二进制版)</option>
+                                <option value="models/GazeNet_Next.bin">GazeNet_Next FP32 .bin (7.6 MB - 加密二进制版)</option>
+                            </select>
+                            <div style="font-size: 11.5px; color: #86909c; line-height: 1.4;">
+                                支持热切换模型，下方可直观对比两者的网络下载体积与 GPU 实时推理耗时。
                             </div>
                         </div>
                     </div>
@@ -859,6 +899,67 @@ const setup_panel = {
             };
         }
 
+        // Neural Model Variant Switcher (FP16 vs FP32)
+        const selModelVariant = document.getElementById('sel-model-variant');
+        const badgeModelTag = document.getElementById('badge-model-tag');
+        if (selModelVariant) {
+            selModelVariant.value = config.modelPath || 'models/GazeNet_Next_fp16.onnx';
+            selModelVariant.onchange = async (e) => {
+                const targetModel = e.target.value;
+                config.modelPath = targetModel;
+                if (badgeModelTag) {
+                    badgeModelTag.innerText = targetModel.includes('fp16') ? 'FP16 半精度 (~3.8 MB)' : 'FP32 全精度 (~7.6 MB)';
+                }
+                if (statusWrap) {
+                    statusWrap.style.display = 'flex';
+                    status.innerText = `Loading ${targetModel.includes('fp16') ? 'FP16' : 'FP32'} model...`;
+                }
+                try {
+                    await GazeFollower2.loadModel(targetModel, (progress) => {
+                        const percent = Math.round(progress * 100);
+                        if (status) status.innerText = `Loading model... ${percent}%`;
+                    });
+                } catch (err) {
+                    console.error("Failed to switch model:", err);
+                    alert("Model switch failed: " + err.message);
+                } finally {
+                    if (statusWrap) statusWrap.style.display = 'none';
+                }
+            };
+        }
+
+        // Real-Time Pipeline Telemetry HUD elements
+        const metricFps = document.getElementById('metric-fps');
+        const metricTotal = document.getElementById('metric-total-ms');
+        const metricMedia = document.getElementById('metric-media-ms');
+        const metricGaze = document.getElementById('metric-gaze-ms');
+        const badgeFps = document.getElementById('badge-fps');
+        const badgeFace = document.getElementById('badge-face-tracking');
+
+        if (typeof GazeFollower2.setStatsListener === 'function') {
+            GazeFollower2.setStatsListener((stats) => {
+                if (metricFps) metricFps.innerText = `${stats.fps} FPS`;
+                if (metricTotal) metricTotal.innerText = `${stats.totalMs} ms`;
+                if (metricMedia) metricMedia.innerText = `${stats.mediapipeMs} ms`;
+                if (metricGaze) metricGaze.innerText = `${stats.gazeMs} ms`;
+
+                if (badgeFps) {
+                    badgeFps.innerHTML = `<span class="pulse-dot"></span> ${stats.fps} FPS Live`;
+                    badgeFps.className = stats.fps >= 24 ? 'status-pill' : (stats.fps >= 15 ? 'status-pill warning' : 'status-pill danger');
+                }
+
+                if (badgeFace) {
+                    if (stats.isFaceDetected) {
+                        badgeFace.innerHTML = '<span class="pulse-dot"></span> Face Detected';
+                        badgeFace.className = 'status-pill';
+                    } else {
+                        badgeFace.innerHTML = '<span class="pulse-dot"></span> Searching Face...';
+                        badgeFace.className = 'status-pill warning';
+                    }
+                }
+            });
+        }
+
         // Initialize SDK and Webcam
         try {
             while (typeof ort === 'undefined' || typeof GazeFollower2 === 'undefined' || !GazeFollower2) { 
@@ -866,6 +967,9 @@ const setup_panel = {
             }
             
             if (statusWrap) statusWrap.style.display = 'flex';
+            if (config.modelPath && GazeFollower2.estimator) {
+                GazeFollower2.estimator.modelPath = config.modelPath;
+            }
             await GazeFollower2.begin((progress) => {
                 const percent = Math.round(progress * 100);
                 status.innerText = `Loading neural model... ${percent}%`;
@@ -899,21 +1003,6 @@ const setup_panel = {
             GazeFollower2.videoElement.play().catch(e => console.warn(e));
             sdkReady = true;
             updateStartButtonState();
-
-            const faceInterval = setInterval(() => {
-                const el = document.getElementById('badge-face-tracking');
-                if (!el) {
-                    clearInterval(faceInterval);
-                    return;
-                }
-                if (GazeFollower2.isFaceDetected) {
-                    el.innerHTML = '<span class="pulse-dot"></span> Face Detected';
-                    el.className = 'status-pill';
-                } else {
-                    el.innerHTML = '<span class="pulse-dot"></span> Searching Face...';
-                    el.className = 'status-pill warning';
-                }
-            }, 250);
         } catch (e) {
             status.innerText = "Error: " + e.message;
             if (badgeStatus) {
@@ -923,6 +1012,9 @@ const setup_panel = {
         }
     },
     on_finish: () => {
+        if (typeof GazeFollower2.setStatsListener === 'function') {
+            GazeFollower2.setStatsListener(null);
+        }
         Object.assign(GazeFollower2.videoElement.style, {
             position: 'fixed', top: '50%', left: '50%', width: 'auto', height: 'auto',
             maxWidth: '100vw', maxHeight: '100vh', transform: 'translate(-50%, -50%) scaleX(-1)'
@@ -1315,7 +1407,8 @@ const free_gaze = {
     stimulus: `
         <div id="gaze-hud" style="position: fixed; top: 28px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 1px solid #e5e6eb; border-radius: 9999px; padding: 8px 24px; display: flex; align-items: center; gap: 14px; z-index: 1000000; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
             <div style="width: 8px; height: 8px; border-radius: 50%; background: #165dff;" class="pulse-dot"></div>
-            <span style="font-size: 13.5px; font-weight: 600; color: #1d2129;">Live Gaze Tracking Active</span>
+            <span style="font-size: 13.5px; font-weight: 600; color: #1d2129;">Live Gaze Tracking</span>
+            <span id="gaze-perf" style="font-size: 12px; font-weight: 600; color: #00b42a; background: #e8ffea; padding: 3px 8px; border-radius: 4px;">-- FPS · -- ms</span>
             <span id="gaze-coords" style="font-size: 12.5px; font-family: monospace; color: #4e5969; background: #f2f3f5; padding: 3px 8px; border-radius: 4px;">X: --- Y: ---</span>
             <span style="font-size: 12px; color: #86909c; border-left: 1px solid #e5e6eb; padding-left: 12px;">Press [Space] to Exit</span>
         </div>
@@ -1333,6 +1426,15 @@ const free_gaze = {
         }
         
         const coordsText = document.getElementById('gaze-coords');
+        const perfText = document.getElementById('gaze-perf');
+
+        if (typeof GazeFollower2.setStatsListener === 'function') {
+            GazeFollower2.setStatsListener((stats) => {
+                if (perfText) {
+                    perfText.innerText = `${stats.fps} FPS · ${stats.totalMs}ms (MP: ${stats.mediapipeMs}ms, Net: ${stats.gazeMs}ms)`;
+                }
+            });
+        }
 
         GazeFollower2.setGazeListener((data) => {
             if (data && !isNaN(data.x) && !isNaN(data.y)) {
@@ -1346,6 +1448,9 @@ const free_gaze = {
         });
     },
     on_finish: () => {
+        if (typeof GazeFollower2.setStatsListener === 'function') {
+            GazeFollower2.setStatsListener(null);
+        }
         const gazeCursor = document.getElementById('gaze-cursor');
         if (gazeCursor) gazeCursor.style.display = 'none';
         const hud = document.getElementById('gaze-hud');

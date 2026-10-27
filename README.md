@@ -189,6 +189,14 @@ Returns the latest predicted gaze coordinates immediately, or `null` if not cali
 const point = GazeFollower2.getCurrentPrediction();
 ```
 
+#### `GazeFollower2.setStatsListener(callback: (stats: PipelineStats) => void): GazeFollower2`
+Subscribes to real-time pipeline telemetry on each processed frame, including total latency, MediaPipe time, neural inference time, and FPS.
+```javascript
+GazeFollower2.setStatsListener((stats) => {
+  console.log(`FPS: ${stats.fps} | Pipeline: ${stats.totalMs}ms (MediaPipe: ${stats.mediapipeMs}ms, GazeNet: ${stats.gazeMs}ms)`);
+});
+```
+
 ---
 
 ### Calibration & Data

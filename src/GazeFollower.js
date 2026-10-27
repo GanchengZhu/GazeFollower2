@@ -76,7 +76,27 @@ export class GazeFollower2 {
         this.smoothY = null;
         this.isFaceDetected = false;
 
-        // Ensure filter methods are bound directly to instance
+        // Performance & Pipeline Telemetry
+        this.pipelineStats = {
+            fps: 0,
+            totalMs: 0,
+            mediapipeMs: 0,
+            faceAlignMs: 0,
+            gazeMs: 0,
+            isFaceDetected: false
+        };
+        this.statsListener = null;
+        this._fpsFrameCount = 0;
+        this._fpsLastTime = 0;
+        this._currentFps = 0;
+        this._smoothTotalMs = 0;
+        this._smoothMediaMs = 0;
+        this._smoothGazeMs = 0;
+        this._smoothAlignMs = 0;
+
+        // Ensure methods are bound directly to instance
+        this.setStatsListener = this.setStatsListener.bind(this);
+        this.getPipelineStats = this.getPipelineStats.bind(this);
         this.setHeuristicFilter = this.setHeuristicFilter.bind(this);
         this.setLookAhead = this.setLookAhead.bind(this);
         this.getLookAhead = this.getLookAhead.bind(this);
@@ -89,6 +109,28 @@ export class GazeFollower2 {
         this.getRidgeAlpha = this.getRidgeAlpha.bind(this);
         this.setLissajousSpeed = this.setLissajousSpeed.bind(this);
         this.getLissajousSpeed = this.getLissajousSpeed.bind(this);
+    }
+
+    /**
+     * Get real-time pipeline performance statistics snapshot.
+     * @returns {{ fps: number, totalMs: number, mediapipeMs: number, gazeMs: number, faceAlignMs: number, isFaceDetected: boolean }}
+     */
+    getPipelineStats() {
+        return { ...this.pipelineStats };
+    }
+
+    get stats() {
+        return this.pipelineStats;
+    }
+
+    /**
+     * Register a callback to receive real-time performance metrics on each processed frame.
+     * @param {Function} callback - ({ fps, totalMs, mediapipeMs, gazeMs, faceAlignMs, isFaceDetected }) => void
+     * @returns {GazeFollower2}
+     */
+    setStatsListener(callback) {
+        this.statsListener = typeof callback === 'function' ? callback : null;
+        return this;
     }
 
     /**
@@ -510,8 +552,9 @@ export class GazeFollower2 {
     }
 
     async loadModel(modelPath = 'models/GazeNet_Next.onnx', progressCallback = null) {
-        this.estimator = new GazeEstimator(modelPath);
-        await this.estimator.init(progressCallback);
+        const newEstimator = new GazeEstimator(modelPath);
+        await newEstimator.init(progressCallback);
+        this.estimator = newEstimator;
         return this;
     }
 
@@ -646,21 +689,32 @@ export class GazeFollower2 {
             return;
         }
         
-        const now = performance.now();
-        const faceResults = this.faceLandmarker.detectForVideo(this.videoElement, now);
+        const tStart = performance.now();
+        let mediapipeMs = 0;
+        let faceAlignMs = 0;
+        let gazeMs = 0;
+
+        const tMediaStart = performance.now();
+        const faceResults = this.faceLandmarker.detectForVideo(this.videoElement, tStart);
+        mediapipeMs = performance.now() - tMediaStart;
         
         if (faceResults.faceLandmarks && faceResults.faceLandmarks.length > 0) {
             this.isFaceDetected = true;
+            const tAlignStart = performance.now();
             const { faceTensor, leftTensor, rightTensor, rectTensor, rawRects } = this.faceAlignment.process(
-                this.videoElement, faceResults.faceLandmarks[0], now
+                this.videoElement, faceResults.faceLandmarks[0], tStart
             );
+            faceAlignMs = performance.now() - tAlignStart;
             
             this.drawOverlay(rawRects);
             
+            const tGazeStart = performance.now();
             const features = await this.estimator.detect(faceTensor, leftTensor, rightTensor, rectTensor);
+            gazeMs = performance.now() - tGazeStart;
+
             if (features) {
                 this.lastFeatures = features;
-                this.caliManager.feedFeatures(features, now);
+                this.caliManager.feedFeatures(features, tStart);
                 
                 if (this.isCalibrated) {
                     const calibrator = this.caliAlgorithm === 'svr' ? this.svrCalibrator : this.ridgeCalibrator;
@@ -680,7 +734,7 @@ export class GazeFollower2 {
                     this.targetY = finalY;
                     
                     if (this.listener) {
-                        this.listener({ x: finalX, y: finalY }, now);
+                        this.listener({ x: finalX, y: finalY }, tStart);
                     }
                 }
             }
@@ -693,6 +747,41 @@ export class GazeFollower2 {
             this.rawY = null;
             this.targetX = null;
             this.targetY = null;
+        }
+
+        const totalMs = performance.now() - tStart;
+
+        // Rolling FPS and Exponential Moving Averages for performance telemetry
+        this._fpsFrameCount = (this._fpsFrameCount || 0) + 1;
+        if (!this._fpsLastTime) this._fpsLastTime = tStart;
+        const elapsedFps = tStart - this._fpsLastTime;
+        if (elapsedFps >= 350) {
+            this._currentFps = (this._fpsFrameCount * 1000) / elapsedFps;
+            this._fpsFrameCount = 0;
+            this._fpsLastTime = tStart;
+        }
+
+        const alpha = 0.2;
+        this._smoothTotalMs = this._smoothTotalMs ? (1 - alpha) * this._smoothTotalMs + alpha * totalMs : totalMs;
+        this._smoothMediaMs = this._smoothMediaMs ? (1 - alpha) * this._smoothMediaMs + alpha * mediapipeMs : mediapipeMs;
+        this._smoothGazeMs = this._smoothGazeMs ? (1 - alpha) * this._smoothGazeMs + alpha * gazeMs : gazeMs;
+        this._smoothAlignMs = this._smoothAlignMs ? (1 - alpha) * this._smoothAlignMs + alpha * faceAlignMs : faceAlignMs;
+
+        this.pipelineStats = {
+            fps: Number((this._currentFps || 0).toFixed(1)),
+            totalMs: Number(this._smoothTotalMs.toFixed(1)),
+            mediapipeMs: Number(this._smoothMediaMs.toFixed(1)),
+            gazeMs: Number(this._smoothGazeMs.toFixed(1)),
+            faceAlignMs: Number(this._smoothAlignMs.toFixed(1)),
+            isFaceDetected: this.isFaceDetected
+        };
+
+        if (this.statsListener && typeof this.statsListener === 'function') {
+            try {
+                this.statsListener(this.pipelineStats);
+            } catch (e) {
+                console.warn("statsListener callback error:", e);
+            }
         }
         
         if (!this.isPaused && this.videoElement && !this.videoElement.paused && typeof this.videoElement.requestVideoFrameCallback === 'function') {
