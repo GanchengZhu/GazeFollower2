@@ -33,3 +33,4 @@ temp_chrome_user_data/
 # Internal Dev Demo (Keep local only for internal testing)
 index_dev.html
 app_dev.js
+upload_remote.bat
