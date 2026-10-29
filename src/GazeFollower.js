@@ -41,7 +41,7 @@ export class GazeFollower2 {
         this.enableGazeFilter = initialEnableFilter;
         this.ridgeAlpha = (typeof cfg.ridgeAlpha === 'number' && cfg.ridgeAlpha > 0)
             ? cfg.ridgeAlpha
-            : ((typeof cfg.alpha === 'number' && cfg.alpha > 0) ? cfg.alpha : 1.0);
+            : ((typeof cfg.alpha === 'number' && cfg.alpha > 0) ? cfg.alpha : 3.0);
         this.faceAlignment = new FaceAlignment();
         this.estimator = new GazeEstimator(modelPath);
         this.ridgeCalibrator = new MultivariateRidgeCalibration(this.ridgeAlpha);

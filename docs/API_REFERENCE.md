@@ -66,11 +66,8 @@ import GazeFollower2, {
   - 默认模型：`'models/GazeNet_Next.onnx'`（开源标准全精度 ONNX 权重，位于 `models/` 目录）
   - 默认启用启发式滤波：`enableGazeFilter = true`
   - 默认滤波前瞻窗口：`look_ahead = 2`（滑动窗口总长 2 × 2 + 1 = 5 帧）
-  - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`，基准 $\lambda = 1.0$)
-    - **校准点数自适应正则化系数 $\lambda$（`ridgeAlpha`）推荐规则**：
-      - **5 点标定 (`'5-point'`)**：推荐默认 $\lambda = 3.0$（快速标定点数较少，需更强 L2 正则化以防过拟合与外推失真）
-      - **9 点标定 (`'9-point'`)**：推荐默认 $\lambda = 2.0$（标准 3×3 网格平滑过渡）
-      - **13 点标定 (`'13-point'`)**：推荐默认 $\lambda = 1.0$（密集网格空间完备，高拟合精度）
+  - 默认标定算法：多元岭回归 (`MultivariateRidgeCalibration`，全局默认 $\lambda = 3.0$)
+    - **全局统一默认规则**：在任何校准点数量下（5 点、9 点、13 点、随机点、Lissajous 轨迹），$\alpha$（$\lambda$）默认均等于 **3.0**，有效杜绝外推失真与边缘发散。
 - **参数说明**：
   - `onnxModelPath` (`string | GazeFollower2Options`, 可选, 默认: `'models/GazeNet_Next.onnx'`)：
     - 传入字符串：模型文件的绝对或相对 URL（例如 `'models/GazeNet_Next.onnx'` 或 `'models/GazeNet_Next_fp16.onnx'`）。
@@ -101,7 +98,7 @@ import GazeFollower2, {
 | `showFaceOverlay` | `boolean` | `true` | 人脸/眼部跟踪框显示状态开关 |
 | `listener` | `Function \| null` | `null` | 当前活跃的视线回调监听函数 |
 | `caliAlgorithm` | `'ridge' \| 'svr'` | `'ridge'` | 当前使用的标定映射算法模式 |
-| `ridgeAlpha` | `number` | `1.0` | 多元岭回归正则化系数 $\lambda$ (Getter / Setter；5点标定默认为3，9点标定默认为2，13点标定默认为1) |
+| `ridgeAlpha` | `number` | `3.0` | 多元岭回归正则化系数 $\lambda$ (Getter / Setter；在任何校准点数量下默认均等于 3.0) |
 | `ridgeCalibrator` | `MultivariateRidgeCalibration` | 实例 | 多元岭回归算法器实例 |
 | `svrCalibrator` | `SVRCalibration` | 实例 | SVR / 单通道回归算法器实例 |
 | `caliManager` | `CalibrationManager` | 实例 | 全屏标定流程管理器实例 |
@@ -255,29 +252,22 @@ SDK 默认开启 **启发式防抖滤波器 (`HeuristicFilter`)**，在保持零
     - `> 20`：直接按毫秒数处理。
   - `order` (`'random' | 'sequential'`，默认 `'random'`): 离散点呈现顺序随机或顺序。
 
-#### 标定点分布与岭回归正则化系数 $\lambda$（`ridgeAlpha`）推荐默认值规范
+#### 标定点分布与岭回归正则化系数 $\lambda$（`ridgeAlpha`）默认值规范
 
-在多元岭回归空间映射求解中，矩阵方程为 $\mathbf{W} = (\mathbf{X}_b^\top \mathbf{X}_b + \lambda \mathbf{I}_0)^{-1} \mathbf{X}_b^\top \mathbf{Y}$。由于视线特征空间高达 258 维，当标定点数较少时，样本矩阵 $\mathbf{X}_b$ 的空间覆盖稀疏，若正则化惩罚过小极易导致过拟合与非标定区域的外推失真。因此，不同标定点数对应不同的推荐默认 $\lambda$ 系数：
+在多元岭回归空间映射求解中，矩阵方程为 $\mathbf{W} = (\mathbf{X}_b^\top \mathbf{X}_b + \lambda \mathbf{I}_0)^{-1} \mathbf{X}_b^\top \mathbf{Y}$。为了在不同标定模式下均能保持最优的空间抗噪性、防发散能力与外推平滑度，**在任何校准点数量下，$\alpha$（$\lambda$）默认均等于 3.0**：
 
-| 标定模式 (`mode`) | 点数规模 | 推荐默认正则化系数 $\lambda$ (`ridgeAlpha`) | 理论依据与调优说明 |
+| 标定模式 (`mode`) | 点数规模 | 默认正则化系数 $\lambda$ (`ridgeAlpha`) | 特性与抗噪说明 |
 | :--- | :---: | :---: | :--- |
-| **`'5-point'`** | 5 点 | **`3.0`**（默认为 3） | 极简快速标定。样本点少，需更强的 L2 惩罚（$\lambda = 3.0$）强约束权重，防止边缘外推发散。 |
-| **`'9-point'`** | 9 点 | **`2.0`**（默认为 2） | 标准 3×3 离散网格。在保持拟合灵敏度的同时施加适度平滑（$\lambda = 2.0$），兼顾全屏过渡。 |
-| **`'13-point'`** *(默认)* | 13 点 | **`1.0`**（默认为 1） | 科学级高精度网格。样本充分且覆盖完备，基准 $\lambda = 1.0$ 可达最优空间分辨率与准确度。 |
-| **`'random'`** | 13 点 | **`1.0`** | 随机 13 点全屏安全区分布，样本数同 13 点。 |
-| **`'lissajous'`** | 连续轨迹 | **`1.0`** | 连续平滑追随动态采样，样本量丰富。 |
+| **`'5-point'`** | 5 点 | **`3.0`** (默认) | 快速标定。$\lambda = 3.0$ 强约束权重，防止边缘外推发散。 |
+| **`'9-point'`** | 9 点 | **`3.0`** (默认) | 标准 3×3 离散网格。保持全局平滑与稳定过渡。 |
+| **`'13-point'`** | 13 点 | **`3.0`** (默认) | 增强型完备网格。统一默认值确保全屏高鲁棒性。 |
+| **`'random'`** | 13 点 | **`3.0`** (默认) | 随机空间分布，样本点空间覆盖均匀。 |
+| **`'lissajous'`** | 连续轨迹 | **`3.0`** (默认) | 连续平滑追随动态采样。 |
 
-> 📌 **调用规范**：
-> 在调用 `startCalibration` 切换到不同点数时，应同步设置对应的正则化参数：
+> 📌 **调用说明**：
+> SDK 全局默认 $\lambda = 3.0$。如需自定义调优，可随时调用：
 > ```javascript
-> // 5 点标定时：λ 默认为 3
-> GazeFollower2.setRidgeAlpha(3.0).startCalibration('5-point', 'click');
->
-> // 9 点标定时：λ 默认为 2
-> GazeFollower2.setRidgeAlpha(2.0).startCalibration('9-point', 'click');
->
-> // 13 点标定时：λ 默认为 1
-> GazeFollower2.setRidgeAlpha(1.0).startCalibration('13-point', 'click');
+> GazeFollower2.setRidgeAlpha(3.0).startCalibration('13-point', 'click');
 > ```
 
 ### `recordScreenPosition(x, y, eventType?): boolean`
@@ -634,7 +624,7 @@ export interface GazeFollower2Options {
   /** 启发式滤波前瞻帧数，默认 2 (即 5 帧滑动窗口) */
   look_ahead?: number;
   lookAhead?: number;
-  /** 多元岭回归正则化系数 alpha/lambda (基准默认 1.0；5点标定默认为 3.0，9点标定默认为 2.0，13点标定默认为 1.0) */
+  /** 多元岭回归正则化系数 alpha/lambda (在任何校准点数下默认均为 3.0) */
   ridgeAlpha?: number;
   alpha?: number;
   /** 模型加载进度回调 (0.0 ~ 1.0) */
@@ -653,7 +643,7 @@ export interface HeuristicFilterOptions {
 
 /** 全屏空间标定配置项 */
 export interface CalibrationOptions {
-  /** 标定点分布模式，默认 '13-point' (5-point 推荐 λ=3.0, 9-point 推荐 λ=2.0, 13-point 推荐 λ=1.0) */
+  /** 标定点分布模式，默认 "13-point" (在任何校准点数下 alpha 默认均为 3.0) */
   mode?: '13-point' | '9-point' | '5-point' | 'random' | 'lissajous';
   /** 标定交互方式，默认 'click' */
   method?: 'click' | 'auto';

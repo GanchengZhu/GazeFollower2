@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { MultivariateRidgeCalibration } from '../src/MultivariateRidgeCalibration.js';
 
 test('MultivariateRidgeCalibration - Instantiation and Parameter Accessors', () => {
+    const defaultCalibrator = new MultivariateRidgeCalibration();
+    assert.equal(defaultCalibrator.lambda, 3.0);
+    assert.equal(defaultCalibrator.alpha, 3.0);
+
     const calibrator = new MultivariateRidgeCalibration(1.0);
     assert.equal(calibrator.lambda, 1.0);
     assert.equal(calibrator.alpha, 1.0);

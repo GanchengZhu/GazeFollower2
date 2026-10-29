@@ -2,8 +2,8 @@
 // Solves W = (X^T X + lambda*I)^-1 X^T Y for simultaneous X and Y coordinate mapping
 
 export class MultivariateRidgeCalibration {
-    constructor(lambda = 1.0) {
-        this.lambda = (typeof lambda === 'number' && Number.isFinite(lambda) && lambda > 0) ? lambda : 1.0;
+    constructor(lambda = 3.0) {
+        this.lambda = (typeof lambda === 'number' && Number.isFinite(lambda) && lambda > 0) ? lambda : 3.0;
         this.weights = []; // Will be a D x 2 matrix
     }
 

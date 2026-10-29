@@ -107,10 +107,10 @@ const I18N = {
         optRidge: "Multivariate Ridge (Analytical - Default)",
         optSVR: "Support Vector Regression (RBF Kernel)",
         ridgeAlpha: "Ridge Regularization (λ)",
-        alphaDefault: "Default: 1.0",
-        alpha5pt: "3.0 (5-pt Anti-Divergence)",
-        alpha9pt: "2.0 (9-pt Standard)",
-        alpha13pt: "1.0 (13-pt Enhanced)",
+        alphaDefault: "Default: 3.0",
+        alphaRec: "3.0 (Recommended Default)",
+        alpha2pt0: "2.0 (Medium Regularization)",
+        alpha1pt0: "1.0 (Low Regularization)",
         latencyComp: "Hardware Latency Compensation",
         latencyFrames: "frames (~{ms} ms{def})",
 
@@ -226,10 +226,10 @@ const I18N = {
         optRidge: "多元岭回归 (解析闭式解 - 默认)",
         optSVR: "支持向量回归 (RBF 核函数)",
         ridgeAlpha: "岭回归正则化系数 (λ)",
-        alphaDefault: "默认: 1.0",
-        alpha5pt: "3.0 (5 点防外推失真)",
-        alpha9pt: "2.0 (9 点标准)",
-        alpha13pt: "1.0 (13 点完备拟合)",
+        alphaDefault: "默认: 3.0",
+        alphaRec: "3.0 (推荐默认)",
+        alpha2pt0: "2.0 (中等正则化)",
+        alpha1pt0: "1.0 (弱正则化)",
         latencyComp: "硬件时延补偿",
         latencyFrames: "帧 (~{ms} ms{def})",
 
@@ -297,7 +297,7 @@ let config = {
     caliOrder: 'random',
     caliMethod: 'click',
     caliAlgorithm: 'ridge',
-    caliAlpha: 1.0,
+    caliAlpha: 3.0,
     caliLatency: 4,
     lissajousSpeed: 250,
     doValidation: true,
@@ -638,12 +638,12 @@ function renderSetupHtml() {
                                     <span id="alpha-hint" style="font-size: 11px; color: #86909c;">${t('alphaDefault')}</span>
                                 </label>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <input type="number" id="inp-cali-alpha" class="studio-input" value="${config.caliAlpha || '1.0'}" step="0.1" min="0.0001" max="1000" style="flex: 1;">
+                                    <input type="number" id="inp-cali-alpha" class="studio-input" value="${config.caliAlpha || '3.0'}" step="0.1" min="0.0001" max="1000" style="flex: 1;">
                                     <select id="sel-alpha-preset" class="studio-select" style="width: 130px; padding: 7px 6px; font-size: 12px;">
                                         <option value="custom">${t('presetLabel')}</option>
-                                        <option value="1.0" ${config.caliAlpha === 1.0 ? 'selected' : ''}>${t('alpha13pt')}</option>
-                                        <option value="2.0" ${config.caliAlpha === 2.0 ? 'selected' : ''}>${t('alpha9pt')}</option>
-                                        <option value="3.0" ${config.caliAlpha === 3.0 ? 'selected' : ''}>${t('alpha5pt')}</option>
+                                        <option value="3.0" ${config.caliAlpha === 3.0 ? 'selected' : ''}>${t('alphaRec')}</option>
+                                        <option value="2.0" ${config.caliAlpha === 2.0 ? 'selected' : ''}>${t('alpha2pt0')}</option>
+                                        <option value="1.0" ${config.caliAlpha === 1.0 ? 'selected' : ''}>${t('alpha1pt0')}</option>
                                         <option value="0.1">0.1</option>
                                         <option value="5.0">5.0</option>
                                         <option value="10.0">10.0</option>
@@ -832,9 +832,9 @@ function updateLanguageDOM(lang) {
     const selAlphaPreset = el('sel-alpha-preset');
     if (selAlphaPreset && selAlphaPreset.options.length >= 4) {
         selAlphaPreset.options[0].text = t('presetLabel');
-        selAlphaPreset.options[1].text = t('alpha13pt');
-        selAlphaPreset.options[2].text = t('alpha9pt');
-        selAlphaPreset.options[3].text = t('alpha5pt');
+        selAlphaPreset.options[1].text = t('alphaRec');
+        selAlphaPreset.options[2].text = t('alpha2pt0');
+        selAlphaPreset.options[3].text = t('alpha1pt0');
     }
 
     if (el('label-latency-comp')) el('label-latency-comp').innerText = t('latencyComp');

@@ -236,7 +236,7 @@ GazeFollower2.setGazeListener((data, timestamp) => {
 ```
 
 #### `GazeFollower2.setRidgeAlpha(alpha: number): GazeFollower2` & `GazeFollower2.getRidgeAlpha(): number`
-Sets or gets the Ridge regression regularization penalty $\lambda$ (defaults: 3.0 for 5-point, 2.0 for 9-point, 1.0 for 13-point).
+Sets or gets the Ridge regression regularization penalty $\lambda$ (default: `3.0` across all calibration point counts and modes).
 ```javascript
 GazeFollower2.setRidgeAlpha(3.0);
 console.log(GazeFollower2.getRidgeAlpha()); // 3
